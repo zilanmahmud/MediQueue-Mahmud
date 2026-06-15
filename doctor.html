@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Control Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #1a73e8; margin-top: 0; font-size: 24px; }
+        input { width: 100%; padding: 15px; font-size: 28px; font-weight: bold; text-align: center; border: 2px solid #dadce0; border-radius: 8px; margin: 20px 0; box-sizing: border-box; }
+        input:focus { border-color: #1a73e8; outline: none; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        button { padding: 20px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; transition: transform 0.1s; }
+        button:active { transform: scale(0.95); }
+        .b1 { background: #ea4335; } .b2 { background: #1a73e8; }
+        .b3 { background: #34a853; } .b4 { background: #f9ab00; }
+        #status { margin-top: 15px; color: #5f6368; font-size: 14px; min-height: 20px; }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div class="card">
+    <h2>MediQueue Controller</h2>
+    <p style="color:#70757a; margin:0;">Enter patient ticket number and select your room:</p>
+    <input type="number" id="patientSerial" placeholder="000" pattern="\d*">
+    
+    <div class="grid">
+        <button class="b1" onclick="sendToRoom(1)">Room 1</button>
+        <button class="b2" onclick="sendToRoom(2)">Room 2</button>
+        <button class="b3" onclick="sendToRoom(3)">Room 3</button>
+        <button class="b4" onclick="sendToRoom(4)">Room 4</button>
+    </div>
+    <div id="status"></div>
+</div>
+
+<script>
+    // Your exact Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBQUOxDh0o2y-aAxLb78tqogLMmcEOvhTg",
+        authDomain: "mediqueue-mahmud.firebaseapp.com",
+        databaseURL: "https://mediqueue-mahmud-default-rtdb.firebaseio.com",
+        projectId: "mediqueue-mahmud",
+        storageBucket: "mediqueue-mahmud.firebasestorage.app",
+        messagingSenderId: "178718052989",
+        appId: "1:178718052989:web:0157c134bcddedb21fd714",
+        measurementId: "G-RTEG14XB87"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function sendToRoom(roomNum) {
+        const serialInput = document.getElementById('patientSerial');
+        const statusDiv = document.getElementById('status');
+        const serialValue = serialInput.value.trim();
+
+        if (!serialValue) {
+            alert("Please enter a valid Serial Number first!");
+            return;
+        }
+
+        statusDiv.innerText = "Sending...";
+
+        // Send data directly to the root to comply with your password security rule
+        database.ref().update({
+            ["room" + roomNum]: serialValue,
+            "authSecret": "INMAS-Mitford2026!"
+        })
+        .then(() => {
+            statusDiv.innerHTML = `<b style="color:#34a853;">Success! Serial ${serialValue} called to Room ${roomNum}</b>`;
+            serialInput.value = ''; // Clear input for next patient
+            setTimeout(() => { statusDiv.innerText = ''; }, 4000);
+        })
+        .catch((error) => {
+            statusDiv.innerHTML = `<b style="color:#ea4335;">Error: Database Rejected Request</b>`;
+            console.error(error);
+        });
+    }
+</script>
+</body>
+</html>
