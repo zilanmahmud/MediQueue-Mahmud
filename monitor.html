@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ওয়েটিং রুম ডিসপ্লে - MediQueue</title>
+    <title>ওয়েটিং রুম ডিসপ্লে - MediQueue Advanced</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; background: #0f172a; color: white; margin: 0; padding: 20px; overflow: hidden; height: 100vh; box-sizing: border-box; }
-        .header { text-align: center; padding: 12px 0; background: #1e293b; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
-        .header h1 { margin: 0; font-size: 38px; color: #38bdf8; letter-spacing: 1px; font-weight: bold; }
-        .audio-notice { font-size: 16px; color: #94a3b8; margin: 8px 0 0 0; cursor: pointer; text-decoration: underline; font-weight: 500; }
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; height: calc(100% - 130px); }
-        .room-card { background: #1e293b; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #334155; transition: all 0.3s ease; }
-        .room-title { font-size: 38px; font-weight: bold; margin-bottom: 12px; }
-        .token-display { font-size: 110px; font-weight: 900; font-family: monospace, Arial; color: #f8fafc; text-shadow: 0 4px 20px rgba(0,0,0,0.5); background: #0f172a; padding: 10px 50px; border-radius: 12px; min-width: 200px; text-align: center; border: 1px solid #475569; }
+        body { font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; background: #0f172a; color: white; margin: 0; padding: 15px; overflow: hidden; height: 100vh; box-sizing: border-box; }
+        .header { text-align: center; padding: 10px 0; background: #1e293b; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
+        .header h1 { margin: 0; font-size: 36px; color: #38bdf8; font-weight: bold; }
+        .audio-notice { font-size: 15px; color: #94a3b8; margin: 5px 0 0 0; cursor: pointer; text-decoration: underline; font-weight: 500; }
         
-        /* Room specific visual indicators */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; height: calc(100% - 115px); }
+        .room-card { background: #1e293b; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; border: 2px solid #334155; box-sizing: border-box; transition: all 0.3s ease; }
+        .room-title { font-size: 36px; font-weight: bold; margin-bottom: 5px; }
+        
+        .token-display { font-size: 95px; font-weight: 900; font-family: Arial, monospace; color: #f8fafc; text-shadow: 0 4px 15px rgba(0,0,0,0.5); background: #0f172a; padding: 0px 45px; border-radius: 12px; min-width: 180px; text-align: center; border: 1px solid #475569; }
+        
+        .upcoming-box { width: 100%; background: #111827; border-radius: 8px; padding: 10px; margin-top: 15px; border: 1px solid #374151; box-sizing: border-box; text-align: center; }
+        .upcoming-label { font-size: 16px; color: #9ca3af; font-weight: bold; margin-bottom: 4px; }
+        .upcoming-tokens { font-size: 22px; font-weight: bold; color: #38bdf8; font-family: Arial, sans-serif; word-spacing: 8px; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Room Colors */
         #rm1 { border-color: #ef4444; } #rm1 .room-title { color: #f87171; }
         #rm2 { border-color: #3b82f6; } #rm2 .room-title { color: #60a5fa; }
         #rm3 { border-color: #22c55e; } #rm3 .room-title { color: #4ade80; }
         #rm4 { border-color: #eab308; } #rm4 .room-title { color: #fde047; }
-        .flash { transform: scale(1.03); background: #334155 !important; }
+        .flash { transform: scale(1.02); background: #334155 !important; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -32,10 +38,41 @@
 </div>
 
 <div class="grid">
-    <div class="room-card" id="rm1"><div class="room-title">রুম ১</div><div class="token-display" id="d1">--</div></div>
-    <div class="room-card" id="rm2"><div class="room-title">রুম ২</div><div class="token-display" id="d2">--</div></div>
-    <div class="room-card" id="rm3"><div class="room-title">রুম ৩</div><div class="token-display" id="d3">--</div></div>
-    <div class="room-card" id="rm4"><div class="room-title">রুম ৪</div><div class="token-display" id="d4">--</div></div>
+    <div class="room-card" id="rm1">
+        <div class="room-title">রুম ১</div>
+        <div class="token-display" id="d1">--</div>
+        <div class="upcoming-box">
+            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
+            <div class="upcoming-tokens" id="q1">--</div>
+        </div>
+    </div>
+    
+    <div class="room-card" id="rm2">
+        <div class="room-title">রুম ২</div>
+        <div class="token-display" id="d2">--</div>
+        <div class="upcoming-box">
+            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
+            <div class="upcoming-tokens" id="q2">--</div>
+        </div>
+    </div>
+    
+    <div class="room-card" id="rm3">
+        <div class="room-title">রুম ৩</div>
+        <div class="token-display" id="d3">--</div>
+        <div class="upcoming-box">
+            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
+            <div class="upcoming-tokens" id="q3">--</div>
+        </div>
+    </div>
+    
+    <div class="room-card" id="rm4">
+        <div class="room-title">রুম ৪</div>
+        <div class="token-display" id="d4">--</div>
+        <div class="upcoming-box">
+            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
+            <div class="upcoming-tokens" id="q4">--</div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -72,17 +109,13 @@
             let osc1 = audioContext.createOscillator();
             let osc2 = audioContext.createOscillator();
             let gain = audioContext.createGain();
-            
             osc1.type = 'sine'; osc2.type = 'sine';
             osc1.frequency.setValueAtTime(523.25, t); 
             osc2.frequency.setValueAtTime(659.25, t + 0.15); 
-            
             gain.gain.setValueAtTime(0.3, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-            
             osc1.connect(gain); osc2.connect(gain);
             gain.connect(audioContext.destination);
-            
             osc1.start(t); osc1.stop(t + 0.4);
             osc2.start(t + 0.15); osc2.stop(t + 0.8);
         } catch(e) { console.log(e); }
@@ -90,25 +123,37 @@
 
     database.ref().on('value', (snapshot) => {
         const data = snapshot.val() || {};
-        let dataChanged = false;
+        let shouldPlaySound = false;
 
         for (let i = 1; i <= 4; i++) {
-            const key = 'room' + i;
-            const newValue = data[key] || '--';
+            const roomKey = 'room' + i;
+            const roomData = data[roomKey] || {};
+            
+            const currentActive = roomData.current || '--';
             const displayElement = document.getElementById('d' + i);
             const cardElement = document.getElementById('rm' + i);
 
-            if (localState[key] !== newValue) {
-                displayElement.innerText = newValue;
-                localState[key] = newValue;
-                dataChanged = true;
+            // 1. Monitor Active Number Change
+            if (localState[roomKey] !== currentActive) {
+                displayElement.innerText = currentActive;
+                localState[roomKey] = currentActive;
+                shouldPlaySound = true;
 
                 cardElement.classList.add('flash');
                 setTimeout(() => cardElement.classList.remove('flash'), 1200);
             }
+
+            // 2. Monitor Queue Change
+            const queueElement = document.getElementById('q' + i);
+            if (roomData.queue) {
+                const sortedSerials = Object.keys(roomData.queue).sort().map(k => roomData.queue[k]);
+                queueElement.innerText = sortedSerials.join(', ');
+            } else {
+                queueElement.innerText = 'নেই'; // Displays "None" in Bangla
+            }
         }
 
-        if (dataChanged) {
+        if (shouldPlaySound) {
             playChime();
         }
     });

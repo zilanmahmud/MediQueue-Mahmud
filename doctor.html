@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Control Panel</title>
+    <title>Staff Advanced Queue Manager</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #1a73e8; margin-top: 0; font-size: 24px; }
-        input { width: 100%; padding: 15px; font-size: 28px; font-weight: bold; text-align: center; border: 2px solid #dadce0; border-radius: 8px; margin: 20px 0; box-sizing: border-box; }
-        input:focus { border-color: #1a73e8; outline: none; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        button { padding: 20px; font-size: 18px; font-weight: bold; color: white; border: none; border-radius: 10px; cursor: pointer; transition: transform 0.1s; }
-        button:active { transform: scale(0.95); }
-        .b1 { background: #ea4335; } .b2 { background: #1a73e8; }
-        .b3 { background: #34a853; } .b4 { background: #f9ab00; }
-        #status { margin-top: 15px; color: #5f6368; font-size: 14px; min-height: 20px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { color: #1a73e8; margin: 0 0 15px 0; text-align: center; }
+        label { font-weight: bold; color: #4a5568; font-size: 14px; }
+        select, input { width: 100%; padding: 12px; font-size: 18px; border: 2px solid #dadce0; border-radius: 8px; margin: 8px 0 15px 0; box-sizing: border-box; }
+        select { background-color: #f8fafc; font-weight: bold; color: #1a73e8; border-color: #1a73e8; }
+        
+        .main-call-btn { width: 100%; padding: 18px; font-size: 20px; font-weight: bold; color: white; background: #34a853; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(52,168,83,0.3); }
+        .add-btn { background: #1a73e8; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 20px; }
+        
+        .status-box { padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; text-align: center; }
+        .current-number { font-size: 32px; font-weight: bold; color: #ea4335; margin: 5px 0; }
+        
+        .queue-section { border-top: 2px dashed #e2e8f0; padding-top: 15px; }
+        .queue-list { list-style: none; padding: 0; margin: 0; }
+        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; margin-bottom: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .queue-item span { font-size: 18px; font-weight: bold; color: #334155; }
+        
+        .action-btns button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-left: 5px; color: white; }
+        .edit-btn { background: #f9ab00; }
+        .del-btn { background: #ea4335; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -23,21 +33,35 @@
 <body>
 
 <div class="card">
-    <h2>MediQueue Controller</h2>
-    <p style="color:#70757a; margin:0;">Enter patient ticket number and select your room:</p>
-    <input type="number" id="patientSerial" placeholder="000" pattern="\d*">
+    <h2>MediQueue Panel</h2>
     
-    <div class="grid">
-        <button class="b1" onclick="sendToRoom(1)">Room 1</button>
-        <button class="b2" onclick="sendToRoom(2)">Room 2</button>
-        <button class="b3" onclick="sendToRoom(3)">Room 3</button>
-        <button class="b4" onclick="sendToRoom(4)">Room 4</button>
+    <label for="roomSelect">SELECT ACTIVE ROOM:</label>
+    <select id="roomSelect" onchange="renderActiveRoom()">
+        <option value="1">Room 1 (রুম ১)</option>
+        <option value="2">Room 2 (রুম ২)</option>
+        <option value="3">Room 3 (রুম ৩)</option>
+        <option value="4">Room 4 (রুম ৪)</option>
+    </select>
+
+    <div class="status-box">
+        <div style="font-size: 14px; color: #64748b; font-weight: bold;">NOW SERVING IN THIS ROOM:</div>
+        <div class="current-number" id="currentPatientDisplay">--</div>
     </div>
-    <div id="status"></div>
+
+    <button class="main-call-btn" onclick="callNextPatient()">🔔 CALL NEXT PATIENT</button>
+
+    <div class="queue-section">
+        <label for="newPatientSerial">ENLIST NEW PATIENT TO THIS ROOM:</label>
+        <input type="number" id="newPatientSerial" placeholder="Enter Serial Number" pattern="\d*">
+        <button class="add-btn" onclick="addPatientToQueue()">+ Add to Waiting List</button>
+    </div>
+
+    <label>UPCOMING WAITING LIST:</label>
+    <ul class="queue-list" id="queueListDisplay">
+        </ul>
 </div>
 
 <script>
-    // Your exact Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBQUOxDh0o2y-aAxLb78tqogLMmcEOvhTg",
         authDomain: "mediqueue-mahmud.firebaseapp.com",
@@ -51,33 +75,106 @@
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    
+    let globalDataState = {};
 
-    function sendToRoom(roomNum) {
-        const serialInput = document.getElementById('patientSerial');
-        const statusDiv = document.getElementById('status');
-        const serialValue = serialInput.value.trim();
+    // Stream entire database updates
+    database.ref().on('value', (snapshot) => {
+        globalDataState = snapshot.val() || {};
+        renderActiveRoom();
+    });
 
-        if (!serialValue) {
-            alert("Please enter a valid Serial Number first!");
+    function getSelectedRoom() {
+        return document.getElementById('roomSelect').value;
+    }
+
+    function renderActiveRoom() {
+        const roomNum = getSelectedRoom();
+        const roomData = globalDataState["room" + roomNum] || {};
+        
+        // Render Active Field
+        document.getElementById('currentPatientDisplay').innerText = roomData.current || '--';
+        
+        // Render Queue List Elements
+        const queueListDisplay = document.getElementById('queueListDisplay');
+        queueListDisplay.innerHTML = '';
+        
+        if (roomData.queue) {
+            // Sort keys chronologically
+            const sortedKeys = Object.keys(roomData.queue).sort();
+            sortedKeys.forEach((key) => {
+                const serial = roomData.queue[key];
+                const li = document.createElement('li');
+                li.className = 'queue-item';
+                li.innerHTML = `
+                    <span>Serial: ${serial}</span>
+                    <div class="action-btns">
+                        <button class="edit-btn" onclick="editQueueItem('${roomNum}', '${key}', '${serial}')">Edit</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', '${key}')">Delete</button>
+                    </div>
+                `;
+                queueListDisplay.appendChild(li);
+            });
+        } else {
+            queueListDisplay.innerHTML = '<li style="color:#94a3b8; text-align:center; padding:10px; font-size:14px;">No patients waiting.</li>';
+        }
+    }
+
+    function addPatientToQueue() {
+        const roomNum = getSelectedRoom();
+        const inputField = document.getElementById('newPatientSerial');
+        const serial = inputField.value.trim();
+        
+        if (!serial) { alert("Please input a valid serial number!"); return; }
+        
+        let updates = {};
+        const timestampId = Date.now(); // Creates chronological key unique to entry sequence
+        updates[`room${roomNum}/queue/${timestampId}`] = serial;
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        
+        database.ref().update(updates).then(() => {
+            inputField.value = '';
+        });
+    }
+
+    function callNextPatient() {
+        const roomNum = getSelectedRoom();
+        const roomData = globalDataState["room" + roomNum] || {};
+        
+        if (!roomData.queue) {
+            alert("The waiting list for this room is currently empty!");
             return;
         }
+        
+        const sortedKeys = Object.keys(roomData.queue).sort();
+        const nextId = sortedKeys[0];
+        const nextSerial = roomData.queue[nextId];
+        
+        let updates = {};
+        updates[`room${roomNum}/current`] = nextSerial;
+        updates[`room${roomNum}/queue/${nextId}`] = null; // Clear out of waiting branch
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        
+        database.ref().update(updates);
+    }
 
-        statusDiv.innerText = "Sending...";
+    function editQueueItem(roomNum, itemId, currentSerial) {
+        const newSerial = prompt("Update Serial Number:", currentSerial);
+        if (newSerial === null || newSerial.trim() === "") return;
+        
+        let updates = {};
+        updates[`room${roomNum}/queue/${itemId}`] = newSerial.trim();
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        database.ref().update(updates);
+    }
 
-        // Send data directly to the root to comply with your password security rule
-        database.ref().update({
-            ["room" + roomNum]: serialValue,
-            "authSecret": "INMAS-Mitford2026!"
-        })
-        .then(() => {
-            statusDiv.innerHTML = `<b style="color:#34a853;">Success! Serial ${serialValue} called to Room ${roomNum}</b>`;
-            serialInput.value = ''; // Clear input for next patient
-            setTimeout(() => { statusDiv.innerText = ''; }, 4000);
-        })
-        .catch((error) => {
-            statusDiv.innerHTML = `<b style="color:#ea4335;">Error: Database Rejected Request</b>`;
-            console.error(error);
-        });
+    function deleteQueueItem(roomNum, itemId) {
+        if (!confirm("Are you sure you want to remove this patient from the line?")) return;
+        
+        let updates = {};
+        updates[`room${roomNum}/queue/${itemId}`] = null;
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        database.ref().update(updates);
     }
 </script>
 </body>
