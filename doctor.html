@@ -6,7 +6,7 @@
     <title>Staff Advanced Queue Manager</title>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
         h2 { color: #1a73e8; margin: 0 0 15px 0; text-align: center; }
         label { font-weight: bold; color: #4a5568; font-size: 14px; }
         select, input { width: 100%; padding: 12px; font-size: 18px; border: 2px solid #dadce0; border-radius: 8px; margin: 8px 0 15px 0; box-sizing: border-box; }
@@ -20,12 +20,14 @@
         
         .queue-section { border-top: 2px dashed #e2e8f0; padding-top: 15px; }
         .queue-list { list-style: none; padding: 0; margin: 0; }
-        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; margin-bottom: 8px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; margin-bottom: 8px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 10px; }
         .queue-item span { font-size: 18px; font-weight: bold; color: #334155; }
         
-        .action-btns button { padding: 6px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-left: 5px; color: white; }
+        .action-btns { display: flex; gap: 5px; }
+        .action-btns button { padding: 8px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .now-btn { background: #e11d48; } /* Crimson red for urgent attention */
         .edit-btn { background: #f9ab00; }
-        .del-btn { background: #ea4335; }
+        .del-btn { background: #70757a; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -48,7 +50,7 @@
         <div class="current-number" id="currentPatientDisplay">--</div>
     </div>
 
-    <button class="main-call-btn" onclick="callNextPatient()">🔔 CALL NEXT PATIENT</button>
+    <button class="main-call-btn" onclick="callNextPatient()">🔔 CALL NEXT CHRONOLOGICAL PATIENT</button>
 
     <div class="queue-section">
         <label for="newPatientSerial">ENLIST NEW PATIENT TO THIS ROOM:</label>
@@ -78,7 +80,6 @@
     
     let globalDataState = {};
 
-    // Stream entire database updates
     database.ref().on('value', (snapshot) => {
         globalDataState = snapshot.val() || {};
         renderActiveRoom();
@@ -92,15 +93,12 @@
         const roomNum = getSelectedRoom();
         const roomData = globalDataState["room" + roomNum] || {};
         
-        // Render Active Field
         document.getElementById('currentPatientDisplay').innerText = roomData.current || '--';
         
-        // Render Queue List Elements
         const queueListDisplay = document.getElementById('queueListDisplay');
         queueListDisplay.innerHTML = '';
         
         if (roomData.queue) {
-            // Sort keys chronologically
             const sortedKeys = Object.keys(roomData.queue).sort();
             sortedKeys.forEach((key) => {
                 const serial = roomData.queue[key];
@@ -109,6 +107,7 @@
                 li.innerHTML = `
                     <span>Serial: ${serial}</span>
                     <div class="action-btns">
+                        <button class="now-btn" onclick="callSpecificPatient('${roomNum}', '${key}', '${serial}')">⚡ Call Now</button>
                         <button class="edit-btn" onclick="editQueueItem('${roomNum}', '${key}', '${serial}')">Edit</button>
                         <button class="del-btn" onclick="deleteQueueItem('${roomNum}', '${key}')">Delete</button>
                     </div>
@@ -128,7 +127,7 @@
         if (!serial) { alert("Please input a valid serial number!"); return; }
         
         let updates = {};
-        const timestampId = Date.now(); // Creates chronological key unique to entry sequence
+        const timestampId = Date.now();
         updates[`room${roomNum}/queue/${timestampId}`] = serial;
         updates['authSecret'] = "INMAS-Mitford2026!";
         
@@ -152,7 +151,19 @@
         
         let updates = {};
         updates[`room${roomNum}/current`] = nextSerial;
-        updates[`room${roomNum}/queue/${nextId}`] = null; // Clear out of waiting branch
+        updates[`room${roomNum}/queue/${nextId}`] = null;
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        
+        database.ref().update(updates);
+    }
+
+    // NEW CLINICAL OVERRIDE FUNCTION
+    function callSpecificPatient(roomNum, itemId, serial) {
+        if (!confirm(`EMERGENCY OVERRIDE:\nAre you sure you want to bypass the queue and call Serial ${serial} to Room ${roomNum} immediately?`)) return;
+        
+        let updates = {};
+        updates[`room${roomNum}/current`] = serial;   // Promotes them to active display immediately
+        updates[`room${roomNum}/queue/${itemId}`] = null; // Removes them from their spot in the waiting list
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
