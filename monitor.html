@@ -3,29 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ওয়েটিং রুম ডিসপ্লে - MediQueue Advanced</title>
+    <title>ওয়েটিং রুম ডিসপ্লে (Waiting Room Display) - MediQueue Universal Adaptive</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; background: #0f172a; color: white; margin: 0; padding: 15px; overflow: hidden; height: 100vh; box-sizing: border-box; }
-        .header { text-align: center; padding: 10px 0; background: #1e293b; border-radius: 12px; margin-bottom: 15px; border: 1px solid #334155; }
-        .header h1 { margin: 0; font-size: 36px; color: #38bdf8; font-weight: bold; }
-        .audio-notice { font-size: 15px; color: #94a3b8; margin: 5px 0 0 0; cursor: pointer; text-decoration: underline; font-weight: 500; }
-        
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; height: calc(100% - 115px); }
-        .room-card { background: #1e293b; border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; border: 2px solid #334155; box-sizing: border-box; transition: all 0.3s ease; }
-        .room-title { font-size: 36px; font-weight: bold; margin-bottom: 5px; }
-        
-        .token-display { font-size: 95px; font-weight: 900; font-family: Arial, monospace; color: #f8fafc; text-shadow: 0 4px 15px rgba(0,0,0,0.5); background: #0f172a; padding: 0px 45px; border-radius: 12px; min-width: 180px; text-align: center; border: 1px solid #475569; }
-        
-        .upcoming-box { width: 100%; background: #111827; border-radius: 8px; padding: 10px; margin-top: 15px; border: 1px solid #374151; box-sizing: border-box; text-align: center; }
-        .upcoming-label { font-size: 16px; color: #9ca3af; font-weight: bold; margin-bottom: 4px; }
-        .upcoming-tokens { font-size: 22px; font-weight: bold; color: #38bdf8; font-family: Arial, sans-serif; word-spacing: 8px; letter-spacing: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        body { 
+            font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; 
+            background: #0f172a; 
+            color: white; 
+            margin: 0; 
+            padding: 2vmin; 
+            overflow: hidden; 
+            height: 100vh; 
+            width: 100vw;
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* Room Colors */
-        #rm1 { border-color: #ef4444; } #rm1 .room-title { color: #f87171; }
-        #rm2 { border-color: #3b82f6; } #rm2 .room-title { color: #60a5fa; }
-        #rm3 { border-color: #22c55e; } #rm3 .room-title { color: #4ade80; }
-        #rm4 { border-color: #eab308; } #rm4 .room-title { color: #fde047; }
-        .flash { transform: scale(1.02); background: #334155 !important; }
+        .header { 
+            text-align: center; 
+            padding: 1.2vmin 0; 
+            background: #1e293b; 
+            border-radius: 12px; 
+            margin-bottom: 2vmin; 
+            border: 1px solid #334155; 
+            flex-shrink: 0; 
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 3.6vmin; 
+            color: #38bdf8; 
+            font-weight: bold; 
+        }
+        .audio-notice { 
+            font-size: 1.8vmin; 
+            color: #94a3b8; 
+            margin: 0.6vh 0 0 0; 
+            cursor: pointer; 
+            text-decoration: underline; 
+            font-weight: 500; 
+        }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2vmin; 
+            flex-grow: 1;
+            min-height: 0; 
+        }
+        
+        .room-card { 
+            background: #1e293b; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-start; 
+            align-items: center; 
+            padding: 2vmin; 
+            border: 2px solid #334155; 
+            box-sizing: border-box; 
+            transition: all 0.3s ease; 
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
+        .room-title { 
+            font-size: 3.4vmin; 
+            font-weight: bold; 
+            margin-bottom: 1.5vmin; 
+            flex-shrink: 0;
+        }
+
+        .current-box { 
+            width: 100%; 
+            background: #111827; 
+            border-radius: 12px; 
+            padding: 1vmin; 
+            border: 1px solid #374151; 
+            box-sizing: border-box; 
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 2vmin;
+        }
+        .current-label { 
+            font-size: 2vmin; 
+            font-weight: bold; 
+            color: #94a3b8; 
+            margin-bottom: 0.4vmin;
+        }
+        .current-number { 
+            font-family: Arial, sans-serif; 
+            font-size: 8.5vmin; 
+            font-weight: 900; 
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            line-height: 1;
+        }
+        
+        .queue-container { 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex-grow: 1; 
+            overflow: hidden;
+            min-height: 0;
+        }
+        .queue-label { 
+            font-size: 2vmin; 
+            color: #9ca3af; 
+            font-weight: bold; 
+            margin-bottom: 1.2vmin; 
+            letter-spacing: 0.5px; 
+            flex-shrink: 0;
+        }
+
+        .badge-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1vmin;
+            justify-content: center;
+            align-content: flex-start;
+            width: 100%;
+            overflow-y: auto;
+            scrollbar-width: none; 
+        }
+        .badge-grid::-webkit-scrollbar { display: none; }
+
+        .token-badge {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            padding: 0.8vmin 2.2vmin;
+            font-family: Arial, sans-serif;
+            font-size: 3.6vmin; 
+            font-weight: 800;
+            color: #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            text-align: center;
+            min-width: 7vmin;
+        }
+        
+        /* Neon Accents per Room Container */
+        #rm1 { border-color: #ef4444; } #rm1 .room-title { color: #f87171; } #rm1 .current-number { color: #ef4444; } #rm1 .token-badge { border-color: #f87171; color: #fecaca; }
+        #rm2 { border-color: #3b82f6; } #rm2 .room-title { color: #60a5fa; } #rm2 .current-number { color: #3b82f6; } #rm2 .token-badge { border-color: #60a5fa; color: #bfdbfe; }
+        #rm3 { border-color: #22c55e; } #rm3 .room-title { color: #4ade80; } #rm3 .current-number { color: #22c55e; } #rm3 .token-badge { border-color: #4ade80; color: #bbf7d0; }
+        #rm4 { border-color: #eab308; } #rm4 .room-title { color: #fde047; } #rm4 .current-number { color: #eab308; } #rm4 .token-badge { border-color: #fde047; color: #fef08a; }
+        .flash { transform: scale(1.01); background: #334155 !important; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -33,44 +161,60 @@
 <body>
 
 <div class="header">
-    <h1>আল্ট্রাসনোগ্রাফি ও কালার ডপলার সিরিয়াল বোর্ড</h1>
-    <p class="audio-notice" id="audioBtn" onclick="enableAudio()">🔔 কলিং বেল সাউন্ড চালু করতে এখানে একবার ক্লিক করুন</p>
+    <h1>আল্ট্রাসনোগ্রাফি ও কালার ডপলার সিরিয়াল বোর্ড (Ultrasonography & Color Doppler Serial Board)</h1>
+    <p class="audio-notice" id="audioBtn" onclick="enableAudio()">🔔 কলিং বেল সাউন্ড চালু করতে এখানে একবার ক্লিক করুন (Click here once to turn on calling bell sound)</p>
 </div>
 
 <div class="grid">
+    <!-- ROOM 1 -->
     <div class="room-card" id="rm1">
-        <div class="room-title">রুম ১</div>
-        <div class="token-display" id="d1">--</div>
-        <div class="upcoming-box">
-            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
-            <div class="upcoming-tokens" id="q1">--</div>
+        <div class="room-title">রুম ১ (Room 1)</div>
+        <div class="current-box">
+            <div class="current-label">এখন ভেতরে (Now Serving):</div>
+            <div class="current-number" id="d1">--</div>
+        </div>
+        <div class="queue-container">
+            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+            <div class="badge-grid" id="q1"></div>
         </div>
     </div>
     
+    <!-- ROOM 2 -->
     <div class="room-card" id="rm2">
-        <div class="room-title">রুম ২</div>
-        <div class="token-display" id="d2">--</div>
-        <div class="upcoming-box">
-            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
-            <div class="upcoming-tokens" id="q2">--</div>
+        <div class="room-title">রুম ২ (Room 2)</div>
+        <div class="current-box">
+            <div class="current-label">এখন ভেতরে (Now Serving):</div>
+            <div class="current-number" id="d2">--</div>
+        </div>
+        <div class="queue-container">
+            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+            <div class="badge-grid" id="q2"></div>
         </div>
     </div>
     
+    <!-- ROOM 3 -->
     <div class="room-card" id="rm3">
-        <div class="room-title">রুম ৩</div>
-        <div class="token-display" id="d3">--</div>
-        <div class="upcoming-box">
-            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
-            <div class="upcoming-tokens" id="q3">--</div>
+        <div class="room-title">রুম ৩ (Room 3)</div>
+        <div class="current-box">
+            <div class="current-label">এখন ভেতরে (Now Serving):</div>
+            <div class="current-number" id="d3">--</div>
+        </div>
+        <div class="queue-container">
+            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+            <div class="badge-grid" id="q3"></div>
         </div>
     </div>
     
+    <!-- ROOM 4 -->
     <div class="room-card" id="rm4">
-        <div class="room-title">রুম ৪</div>
-        <div class="token-display" id="d4">--</div>
-        <div class="upcoming-box">
-            <div class="upcoming-label">পরবর্তী সিরিয়াল:</div>
-            <div class="upcoming-tokens" id="q4">--</div>
+        <div class="room-title">রুম ৪ (Room 4)</div>
+        <div class="current-box">
+            <div class="current-label">এখন ভেতরে (Now Serving):</div>
+            <div class="current-number" id="d4">--</div>
+        </div>
+        <div class="queue-container">
+            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+            <div class="badge-grid" id="q4"></div>
         </div>
     </div>
 </div>
@@ -96,7 +240,7 @@
     function enableAudio() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            document.getElementById('audioBtn').innerText = "🔊 সাউন্ড সিস্টেম চালু আছে";
+            document.getElementById('audioBtn').innerText = "🔊 সাউন্ড সিস্টেম চালু আছে (Sound System Active)";
             document.getElementById('audioBtn').style.color = "#4ade80";
             document.getElementById('audioBtn').style.textDecoration = "none";
         }
@@ -133,7 +277,6 @@
             const displayElement = document.getElementById('d' + i);
             const cardElement = document.getElementById('rm' + i);
 
-            // 1. Monitor Active Number Change
             if (localState[roomKey] !== currentActive) {
                 displayElement.innerText = currentActive;
                 localState[roomKey] = currentActive;
@@ -143,13 +286,18 @@
                 setTimeout(() => cardElement.classList.remove('flash'), 1200);
             }
 
-            // 2. Monitor Queue Change
-            const queueElement = document.getElementById('q' + i);
+            const gridElement = document.getElementById('q' + i);
+            
             if (roomData.queue) {
-                const sortedSerials = Object.keys(roomData.queue).sort().map(k => roomData.queue[k]);
-                queueElement.innerText = sortedSerials.join(', ');
+                const sortedSerials = Object.keys(roomData.queue).sort((a,b) => parseInt(a)-parseInt(b)).map(k => roomData.queue[k]).filter(v => v !== null);
+                
+                let badgeHtml = '';
+                sortedSerials.forEach((serial) => {
+                    badgeHtml += `<div class="token-badge">${serial}</div>`;
+                });
+                gridElement.innerHTML = badgeHtml;
             } else {
-                queueElement.innerText = 'নেই'; // Displays "None" in Bangla
+                gridElement.innerHTML = '<div style="color: #475569; font-size: 2.2vmin; margin-top: 2vmin; font-weight: bold;">নেই / ফাঁকা (None / Empty)</div>';
             }
         }
 

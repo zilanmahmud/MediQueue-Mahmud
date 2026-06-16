@@ -5,33 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Advanced Queue Manager</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; justify-content: center; }
-        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 480px; }
-        h2 { color: #1a73e8; margin: 0 0 15px 0; text-align: center; }
-        label { font-weight: bold; color: #4a5568; font-size: 14px; }
-        select, input { width: 100%; padding: 12px; font-size: 18px; border: 2px solid #dadce0; border-radius: 8px; margin: 8px 0 15px 0; box-sizing: border-box; }
-        select { background-color: #f8fafc; font-weight: bold; color: #1a73e8; border-color: #1a73e8; }
+        /* Base wrapper ensures full alignment across different window structures */
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #f0f2f5; 
+            margin: 0; 
+            padding: 2vmin; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
         
-        .main-call-btn { width: 100%; padding: 18px; font-size: 20px; font-weight: bold; color: white; background: #34a853; border: none; border-radius: 10px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(52,168,83,0.3); }
-        .add-btn { background: #1a73e8; color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-bottom: 20px; }
+        /* ADAPTIVE MAIN PANEL CARD */
+        .card { 
+            background: white; 
+            padding: clamp(15px, 4vmin, 30px); 
+            border-radius: 16px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 520px; /* Restricts stretching into abstract blocks on wide desktop screens */
+            box-sizing: border-box;
+        }
         
-        .status-box { padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; text-align: center; }
-        .current-number { font-size: 32px; font-weight: bold; color: #ea4335; margin: 5px 0; }
+        h2 { 
+            color: #1a73e8; 
+            margin: 0 0 2vmin 0; 
+            text-align: center; 
+            font-size: clamp(20px, 5vmin, 28px);
+        }
         
-        .queue-section { border-top: 2px dashed #e2e8f0; padding-top: 15px; }
-        .queue-list { list-style: none; padding: 0; margin: 0; }
-        .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; margin-bottom: 8px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; gap: 10px; }
-        .queue-item span { font-size: 18px; font-weight: bold; color: #334155; }
+        label { 
+            font-weight: bold; 
+            color: #4a5568; 
+            font-size: clamp(11px, 2.5vmin, 15px);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         
-        .action-btns { display: flex; gap: 5px; }
-        .action-btns button { padding: 8px 12px; font-size: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        /* FLUID FORM CONTROLS */
+        select, input { 
+            width: 100%; 
+            padding: clamp(10px, 2.5vmin, 15px); 
+            font-size: clamp(16px, 3.5vmin, 22px); 
+            border: 2px solid #dadce0; 
+            border-radius: 8px; 
+            margin: 1vmin 0 2.5vmin 0; 
+            box-sizing: border-box; 
+        }
+        select { 
+            background-color: #f8fafc; 
+            font-weight: bold; 
+            color: #1a73e8; 
+            border-color: #1a73e8; 
+        }
+        
+        /* RESPONSIVE CONTROL BUTTONS */
+        .main-call-btn { 
+            width: 100%; 
+            padding: clamp(14px, 3.5vmin, 20px); 
+            font-size: clamp(16px, 3.8vmin, 22px); 
+            font-weight: bold; 
+            color: white; 
+            background: #34a853; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            margin-bottom: 2.5vmin; 
+            box-shadow: 0 4px 12px rgba(52,168,83,0.3); 
+            transition: background 0.2s;
+        }
+        .main-call-btn:hover { background: #2c9247; }
+        
+        .add-btn { 
+            background: #1a73e8; 
+            color: white; 
+            border: none; 
+            padding: clamp(10px, 2.8vmin, 15px); 
+            font-size: clamp(14px, 3.2vmin, 18px); 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-bottom: 2.5vmin; 
+        }
+        .add-btn:hover { background: #155cb4; }
+        
+        .status-box { 
+            padding: 2vmin; 
+            background: #f8fafc; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
+            margin-bottom: 2.5vmin; 
+            text-align: center; 
+        }
+        .current-number { 
+            font-size: clamp(28px, 6vmin, 45px); 
+            font-weight: 900; 
+            color: #ea4335; 
+            margin: 0.5vmin 0; 
+        }
+        
+        .queue-section { 
+            border-top: 2px dashed #e2e8f0; 
+            padding-top: 2.5vmin; 
+        }
+        
+        /* ADAPTIVE WAITING FEED LIST */
+        .queue-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 1vmin 0 0 0; 
+        }
+        .queue-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: clamp(8px, 2vmin, 14px); 
+            background: #f8fafc; 
+            margin-bottom: 1vmin; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
+            flex-wrap: wrap; 
+            gap: 1.5vmin; 
+        }
+        .queue-item span { 
+            font-size: clamp(14px, 3.2vmin, 19px); 
+            font-weight: bold; 
+            color: #334155; 
+            min-width: max-content; 
+        }
+        
+        .action-btns { 
+            display: flex; 
+            gap: 0.8vmin; 
+            flex-wrap: wrap; 
+        }
+        .action-btns button { 
+            padding: clamp(6px, 1.8vmin, 10px) clamp(8px, 2vmin, 12px); 
+            font-size: clamp(11px, 2.5vmin, 14px); 
+            font-weight: bold; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            color: white; 
+        }
+        
         .now-btn { background: #e11d48; } 
         .edit-btn { background: #f9ab00; }
         .del-btn { background: #70757a; }
+        .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
 
-        /* End of Day Reset Styling */
-        .reset-section { border-top: 2px solid #e2e8f0; margin-top: 25px; padding-top: 15px; text-align: center; }
-        .reset-btn { background: #475569; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .reset-section { 
+            border-top: 2px solid #e2e8f0; 
+            margin-top: 3.5vmin; 
+            padding-top: 2.5vmin; 
+            text-align: center; 
+        }
+        .reset-btn { 
+            background: #475569; 
+            color: white; 
+            border: none; 
+            padding: clamp(10px, 2.5vmin, 14px) 20px; 
+            font-size: clamp(12px, 2.8vmin, 15px); 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%; 
+        }
         .reset-btn:hover { background: #334155; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -42,7 +184,7 @@
 <div class="card">
     <h2>MediQueue Panel</h2>
     
-    <label for="roomSelect">SELECT ACTIVE ROOM:</label>
+    <label for="roomSelect">Select Active Room:</label>
     <select id="roomSelect" onchange="renderActiveRoom()">
         <option value="1">Room 1 (রুম ১)</option>
         <option value="2">Room 2 (রুম ২)</option>
@@ -51,21 +193,22 @@
     </select>
 
     <div class="status-box">
-        <div style="font-size: 14px; color: #64748b; font-weight: bold;">NOW SERVING IN THIS ROOM:</div>
+        <label>Now Serving In This Room:</label>
         <div class="current-number" id="currentPatientDisplay">--</div>
     </div>
 
     <button class="main-call-btn" onclick="callNextPatient()">🔔 CALL NEXT CHRONOLOGICAL PATIENT</button>
 
     <div class="queue-section">
-        <label for="newPatientSerial">ENLIST NEW PATIENT TO THIS ROOM:</label>
+        <label for="newPatientSerial">Enlist New Patient To This Room:</label>
         <input type="number" id="newPatientSerial" placeholder="Enter Serial Number" pattern="\d*">
         <button class="add-btn" onclick="addPatientToQueue()">+ Add to Waiting List</button>
     </div>
 
-    <label>UPCOMING WAITING LIST:</label>
+    <label>Upcoming Waiting List:</label>
     <ul class="queue-list" id="queueListDisplay">
-        </ul>
+        <!-- Dynamic elements populate here -->
+    </ul>
 
     <div class="reset-section">
         <button class="reset-btn" onclick="resetEntireSystem()">🧹 Reset System for Next Day</button>
@@ -98,6 +241,14 @@
         return document.getElementById('roomSelect').value;
     }
 
+    function getCleanQueueArray(roomData) {
+        if (!roomData || !roomData.queue) return [];
+        return Object.keys(roomData.queue)
+                     .sort((a, b) => parseInt(a) - parseInt(b))
+                     .map(key => roomData.queue[key])
+                     .filter(val => val !== null && val !== undefined);
+    }
+
     function renderActiveRoom() {
         const roomNum = getSelectedRoom();
         const roomData = globalDataState["room" + roomNum] || {};
@@ -107,18 +258,24 @@
         const queueListDisplay = document.getElementById('queueListDisplay');
         queueListDisplay.innerHTML = '';
         
-        if (roomData.queue) {
-            const sortedKeys = Object.keys(roomData.queue).sort();
-            sortedKeys.forEach((key) => {
-                const serial = roomData.queue[key];
+        const queueArray = getCleanQueueArray(roomData);
+
+        if (queueArray.length > 0) {
+            queueArray.forEach((serial, index) => {
                 const li = document.createElement('li');
                 li.className = 'queue-item';
+
+                const upArrow = index > 0 ? `<button class="order-btn" onclick="moveOrder('${roomNum}', ${index}, 'up')">▲</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▲</button>`;
+                const downArrow = index < queueArray.length - 1 ? `<button class="order-btn" onclick="moveOrder('${roomNum}', ${index}, 'down')">▼</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▼</button>`;
+
                 li.innerHTML = `
                     <span>Serial: ${serial}</span>
                     <div class="action-btns">
-                        <button class="now-btn" onclick="callSpecificPatient('${roomNum}', '${key}', '${serial}')">⚡ Call Now</button>
-                        <button class="edit-btn" onclick="editQueueItem('${roomNum}', '${key}', '${serial}')">Edit</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', '${key}')">Delete</button>
+                        ${upArrow}
+                        ${downArrow}
+                        <button class="now-btn" onclick="callSpecificPatient('${roomNum}', ${index}, '${serial}')">⚡ Call Now</button>
+                        <button class="edit-btn" onclick="editQueueItem('${roomNum}', ${index}, '${serial}')">Edit</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', ${index}')">Delete</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
@@ -133,70 +290,112 @@
         const inputField = document.getElementById('newPatientSerial');
         const serial = inputField.value.trim();
         
-        if (!serial) { alert("Please input a valid serial number!"); return; }
+        if (!serial) { 
+            alert("Please input a valid serial number!"); 
+            inputField.focus();
+            return; 
+        }
+        
+        const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
+        
+        queueArray.push(serial);
+        queueArray.sort((a, b) => parseInt(a) - parseInt(b));
         
         let updates = {};
-        const timestampId = Date.now();
-        updates[`room${roomNum}/queue/${timestampId}`] = serial;
+        updates[`room${roomNum}/queue`] = queueArray;
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates).then(() => {
             inputField.value = '';
+            inputField.focus(); 
         });
     }
 
     function callNextPatient() {
         const roomNum = getSelectedRoom();
         const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
         
-        if (!roomData.queue) {
+        if (queueArray.length === 0) {
             alert("The waiting list for this room is currently empty!");
             return;
         }
         
-        const sortedKeys = Object.keys(roomData.queue).sort();
-        const nextId = sortedKeys[0];
-        const nextSerial = roomData.queue[nextId];
+        const nextSerial = queueArray.shift();
         
         let updates = {};
         updates[`room${roomNum}/current`] = nextSerial;
-        updates[`room${roomNum}/queue/${nextId}`] = null;
+        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
     }
 
-    function callSpecificPatient(roomNum, itemId, serial) {
+    function moveOrder(roomNum, index, direction) {
+        const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
+
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= queueArray.length) return;
+
+        const temp = queueArray[index];
+        queueArray[index] = queueArray[targetIndex];
+        queueArray[targetIndex] = temp;
+
+        let updates = {};
+        updates[`room${roomNum}/queue`] = queueArray;
+        updates['authSecret'] = "INMAS-Mitford2026!";
+
+        database.ref().update(updates);
+    }
+
+    function callSpecificPatient(roomNum, index, serial) {
         if (!confirm(`EMERGENCY OVERRIDE:\nAre you sure you want to bypass the queue and call Serial ${serial} to Room ${roomNum} immediately?`)) return;
         
+        const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
+
+        queueArray.splice(index, 1);
+
         let updates = {};
         updates[`room${roomNum}/current`] = serial;   
-        updates[`room${roomNum}/queue/${itemId}`] = null; 
+        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
     }
 
-    function editQueueItem(roomNum, itemId, currentSerial) {
+    function editQueueItem(roomNum, index, currentSerial) {
         const newSerial = prompt("Update Serial Number:", currentSerial);
         if (newSerial === null || newSerial.trim() === "") return;
         
-        let updates = {};
-        updates[`room${roomNum}/queue/${itemId}`] = newSerial.trim();
-        updates['authSecret'] = "INVIS-Mitford2026!";
-        database.ref().update(updates);
-    }
+        const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
 
-    function deleteQueueItem(roomNum, itemId) {
-        if (!confirm("Are you sure you want to remove this patient from the line?")) return;
-        
+        queueArray[index] = newSerial.trim();
+        queueArray.sort((a, b) => parseInt(a) - parseInt(b));
+
         let updates = {};
-        updates[`room${roomNum}/queue/${itemId}`] = null;
+        updates[`room${roomNum}/queue`] = queueArray;
         updates['authSecret'] = "INMAS-Mitford2026!";
         database.ref().update(updates);
     }
 
-    // MASTER RESET FUNCTION
+    function deleteQueueItem(roomNum, index) {
+        if (!confirm("Are you sure you want to remove this patient from the line?")) return;
+        
+        const roomData = globalDataState["room" + roomNum] || {};
+        let queueArray = getCleanQueueArray(roomData);
+
+        queueArray.splice(index, 1);
+
+        let updates = {};
+        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
+        updates['authSecret'] = "INMAS-Mitford2026!";
+        database.ref().update(updates);
+    }
+
     function resetEntireSystem() {
         const confirmFirst = confirm("🚨 END OF DAY CLEARANCE:\nAre you absolutely sure you want to delete ALL waiting lists and active numbers across all 4 rooms?");
         if (!confirmFirst) return;
@@ -206,8 +405,8 @@
 
         let updates = {};
         for (let i = 1; i <= 4; i++) {
-            updates[`room${i}/current`] = '--'; // Reset display to default dashes
-            updates[`room${i}/queue`] = null;    // Wipe the waiting array entirely
+            updates[`room${i}/current`] = '--'; 
+            updates[`room${i}/queue`] = null;    
         }
         updates['authSecret'] = "INMAS-Mitford2026!";
 
