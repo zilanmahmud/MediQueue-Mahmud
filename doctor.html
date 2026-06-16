@@ -164,6 +164,7 @@
         .edit-btn { background: #f9ab00; }
         .del-btn { background: #70757a; }
         .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
+        .move-btn { background: #8b5cf6; } /* Purple accent for transfer triggers */
 
         .reset-section { 
             border-top: 2px solid #e2e8f0; 
@@ -217,11 +218,10 @@
 
     <label>Upcoming Waiting List:</label>
     <ul class="queue-list" id="queueListDisplay">
-        <!-- Dynamic elements populate here -->
+        <!-- Dynamic entries yield here -->
     </ul>
 
     <div class="reset-section">
-        <!-- MODIFIED: Button text dynamically links context via initialization script -->
         <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 Reset Selected Room Data</button>
     </div>
 </div>
@@ -259,7 +259,6 @@
         return document.getElementById('roomSelect').value;
     }
 
-    // MODIFIED: Live updating button label to prevent accidental clicking
     function updateResetButtonLabel() {
         const roomNum = getSelectedRoom();
         document.getElementById('resetRoomBtn').innerText = `🧹 Reset Room ${roomNum} Data for Next Day`;
@@ -298,6 +297,7 @@
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
+                        <button class="move-btn" onclick="transferPatient('${roomNum}', ${index}, '${serial}')">➡️ Move</button>
                         <button class="now-btn" onclick="callSpecificPatient('${roomNum}', ${index}, '${serial}')">⚡ Call Now</button>
                         <button class="edit-btn" onclick="editQueueItem('${roomNum}', ${index}, '${serial}')">Edit</button>
                         <button class="del-btn" onclick="deleteQueueItem('${roomNum}', ${index})">Delete</button>
@@ -337,6 +337,53 @@
         database.ref().update(updates).then(() => {
             inputField.value = '';
             inputField.focus(); 
+        });
+    }
+
+    // NEW INTER-ROOM TRANSFER ARCHITECTURE: Cross-node transactional routing
+    function transferPatient(fromRoom, index, serial) {
+        const targetRoomInput = prompt(`Move Serial ${serial} to another room.\nEnter target room number (1, 2, 3, or 4):`);
+        if (targetRoomInput === null) return; // User pressed Cancel
+        
+        const targetRoomNum = targetRoomInput.trim();
+        if (!['1', '2', '3', '4'].includes(targetRoomNum)) {
+            alert("Invalid choice! You must enter 1, 2, 3, or 4.");
+            return;
+        }
+        if (targetRoomNum === fromRoom) {
+            alert(`Patient is already listed in Room ${fromRoom}!`);
+            return;
+        }
+
+        // 1. Process Source Room Extraction
+        const fromRoomData = globalDataState["room" + fromRoom] || {};
+        let fromQueue = getCleanQueueArray(fromRoomData);
+        fromQueue.splice(index, 1); // Pluck the item out
+
+        // 2. Process Destination Room Insertion
+        const targetRoomData = globalDataState["room" + targetRoomNum] || {};
+        let targetQueue = getCleanQueueArray(targetRoomData);
+        targetQueue.push(serial);
+        targetQueue.sort((a, b) => parseInt(a) - parseInt(b)); // Keep target room sorted numerically
+
+        // 3. Compile Atomic Multi-Node Payload
+        let updates = {};
+        updates[`room${fromRoom}`] = {
+            current: fromRoomData.current || '--',
+            queue: fromQueue.length > 0 ? fromQueue : null
+        };
+        updates[`room${targetRoomNum}`] = {
+            current: targetRoomData.current || '--',
+            queue: targetQueue
+        };
+        updates['authSecret'] = "INMAS-Mitford2026!";
+
+        // Write atomically to the cloud to guarantee seamless simultaneous screen changes
+        database.ref().update(updates).then(() => {
+            alert(`Serial ${serial} successfully moved to Room ${targetRoomNum}.`);
+        }).catch((err) => {
+            alert("Database write failed during transfer operation.");
+            console.error(err);
         });
     }
 
@@ -438,7 +485,6 @@
         database.ref().update(updates);
     }
 
-    // MODIFIED NEW LOGIC: Isolated reset execution targeting only the active selection index
     function resetActiveRoomOnly() {
         const roomNum = getSelectedRoom();
         
@@ -449,7 +495,6 @@
         if (!confirmSecond) return;
 
         let updates = {};
-        // Overwriting only the targeted room tree nodes cleanly
         updates[`room${roomNum}`] = {
             current: '--',
             queue: null
