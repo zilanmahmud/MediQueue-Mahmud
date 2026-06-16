@@ -34,7 +34,6 @@
             font-size: clamp(20px, 5vmin, 28px);
         }
 
-        /* NEW STYLE: Fluid, high-visibility clinical date verification banner */
         .date-display {
             text-align: center;
             font-size: clamp(12px, 2.8vmin, 16px);
@@ -193,11 +192,10 @@
 <div class="card">
     <h2>MediQueue Panel</h2>
     
-    <!-- NEW ELEMENT: Displays the dynamic calendar anchor text -->
     <div class="date-display" id="liveDateDisplay">Loading Today's Date...</div>
     
     <label for="roomSelect">Select Active Room:</label>
-    <select id="roomSelect" onchange="renderActiveRoom()">
+    <select id="roomSelect" onchange="updateResetButtonLabel(); renderActiveRoom();">
         <option value="1">Room 1 (রুম ১)</option>
         <option value="2">Room 2 (রুম ২)</option>
         <option value="3">Room 3 (রুম ৩)</option>
@@ -223,7 +221,8 @@
     </ul>
 
     <div class="reset-section">
-        <button class="reset-btn" onclick="resetEntireSystem()">🧹 Reset System for Next Day</button>
+        <!-- MODIFIED: Button text dynamically links context via initialization script -->
+        <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 Reset Selected Room Data</button>
     </div>
 </div>
 
@@ -249,7 +248,6 @@
         renderActiveRoom();
     });
 
-    // NEW LOGIC: Renders local clock time format instantly on page access
     function initializeDateBanner() {
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const calendarString = new Date().toLocaleDateString('en-US', dateOptions);
@@ -260,6 +258,13 @@
     function getSelectedRoom() {
         return document.getElementById('roomSelect').value;
     }
+
+    // MODIFIED: Live updating button label to prevent accidental clicking
+    function updateResetButtonLabel() {
+        const roomNum = getSelectedRoom();
+        document.getElementById('resetRoomBtn').innerText = `🧹 Reset Room ${roomNum} Data for Next Day`;
+    }
+    updateResetButtonLabel();
 
     function getCleanQueueArray(roomData) {
         if (!roomData || !roomData.queue) return [];
@@ -433,24 +438,28 @@
         database.ref().update(updates);
     }
 
-    function resetEntireSystem() {
-        const confirmFirst = confirm("🚨 END OF DAY CLEARANCE:\nAre you absolutely sure you want to delete ALL waiting lists and active numbers across all 4 rooms?");
+    // MODIFIED NEW LOGIC: Isolated reset execution targeting only the active selection index
+    function resetActiveRoomOnly() {
+        const roomNum = getSelectedRoom();
+        
+        const confirmFirst = confirm(`🚨 END OF DAY CLEARANCE:\nAre you absolutely sure you want to delete the waiting list and reset the active serving number for Room ${roomNum} only?`);
         if (!confirmFirst) return;
 
-        const confirmSecond = confirm("⚠️ FINAL WARNING:\nThis action cannot be undone. Clear everything for tomorrow morning?");
+        const confirmSecond = confirm(`⚠️ FINAL WARNING:\nThis will NOT affect other diagnostic rooms. Wipe data for Room ${roomNum}?`);
         if (!confirmSecond) return;
 
         let updates = {};
-        for (let i = 1; i <= 4; i++) {
-            updates[`room${i}/current`] = '--'; 
-            updates[`room${i}/queue`] = null;    
-        }
+        // Overwriting only the targeted room tree nodes cleanly
+        updates[`room${roomNum}`] = {
+            current: '--',
+            queue: null
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates).then(() => {
-            alert("System successfully cleared! Have a great evening.");
+            alert(`Room ${roomNum} has been successfully cleared for the next shift.`);
         }).catch((err) => {
-            alert("Error resetting database.");
+            alert("Error clearing room database.");
             console.error(err);
         });
     }
