@@ -71,36 +71,37 @@
         .room-title { 
             font-size: 3.4vmin; 
             font-weight: bold; 
-            margin-bottom: 1.5vmin; 
+            margin-bottom: 1.2vmin; 
             flex-shrink: 0;
         }
 
+        /* OPTIMIZED: Downscaled, compact horizontal row configuration to save vertical window space */
         .current-box { 
             width: 100%; 
             background: #111827; 
-            border-radius: 12px; 
-            padding: 1vmin; 
+            border-radius: 10px; 
+            padding: 0.8vmin 1.5vmin; 
             border: 1px solid #374151; 
             box-sizing: border-box; 
             text-align: center; 
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
+            gap: 1.5vmin;
             flex-shrink: 0;
-            margin-bottom: 2vmin;
+            margin-bottom: 1.5vmin;
         }
         .current-label { 
-            font-size: 2vmin; 
+            font-size: 1.8vmin; 
             font-weight: bold; 
             color: #94a3b8; 
-            margin-bottom: 0.4vmin;
         }
         .current-number { 
             font-family: Arial, sans-serif; 
-            font-size: 8.5vmin; 
+            font-size: 4.8vmin; /* Balanced scale to stay clearly distinct without hogging screen canvas */
             font-weight: 900; 
-            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
             line-height: 1;
         }
         
@@ -170,8 +171,8 @@
     <div class="room-card" id="rm1">
         <div class="room-title">রুম ১ (Room 1)</div>
         <div class="current-box">
-            <div class="current-label">এখন ভেতরে (Now Serving):</div>
-            <div class="current-number" id="d1">--</div>
+            <span class="current-label">এখন ভেতরে (Now Serving):</span>
+            <span class="current-number" id="d1">--</span>
         </div>
         <div class="queue-container">
             <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
@@ -183,8 +184,8 @@
     <div class="room-card" id="rm2">
         <div class="room-title">রুম ২ (Room 2)</div>
         <div class="current-box">
-            <div class="current-label">এখন ভেতরে (Now Serving):</div>
-            <div class="current-number" id="d2">--</div>
+            <span class="current-label">এখন ভেতরে (Now Serving):</span>
+            <span class="current-number" id="d2">--</span>
         </div>
         <div class="queue-container">
             <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
@@ -196,8 +197,8 @@
     <div class="room-card" id="rm3">
         <div class="room-title">রুম ৩ (Room 3)</div>
         <div class="current-box">
-            <div class="current-label">এখন ভেতরে (Now Serving):</div>
-            <div class="current-number" id="d3">--</div>
+            <span class="current-label">এখন ভেতরে (Now Serving):</span>
+            <span class="current-number" id="d3">--</span>
         </div>
         <div class="queue-container">
             <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
@@ -209,8 +210,8 @@
     <div class="room-card" id="rm4">
         <div class="room-title">রুম ৪ (Room 4)</div>
         <div class="current-box">
-            <div class="current-label">এখন ভেতরে (Now Serving):</div>
-            <div class="current-number" id="d4">--</div>
+            <span class="current-label">এখন ভেতরে (Now Serving):</span>
+            <span class="current-number" id="d4">--</span>
         </div>
         <div class="queue-container">
             <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
