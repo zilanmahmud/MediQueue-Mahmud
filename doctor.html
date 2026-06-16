@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Advanced Queue Manager</title>
     <style>
-        /* Base wrapper ensures full alignment across different window structures */
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
             background: #f0f2f5; 
@@ -18,22 +17,35 @@
             box-sizing: border-box;
         }
         
-        /* ADAPTIVE MAIN PANEL CARD */
         .card { 
             background: white; 
             padding: clamp(15px, 4vmin, 30px); 
             border-radius: 16px; 
             box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
             width: 100%; 
-            max-width: 520px; /* Restricts stretching into abstract blocks on wide desktop screens */
+            max-width: 520px; 
             box-sizing: border-box;
         }
         
         h2 { 
             color: #1a73e8; 
-            margin: 0 0 2vmin 0; 
+            margin: 0 0 1vmin 0; 
             text-align: center; 
             font-size: clamp(20px, 5vmin, 28px);
+        }
+
+        /* NEW STYLE: Fluid, high-visibility clinical date verification banner */
+        .date-display {
+            text-align: center;
+            font-size: clamp(12px, 2.8vmin, 16px);
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 3vmin;
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            box-sizing: border-box;
         }
         
         label { 
@@ -44,7 +56,6 @@
             letter-spacing: 0.5px;
         }
         
-        /* FLUID FORM CONTROLS */
         select, input { 
             width: 100%; 
             padding: clamp(10px, 2.5vmin, 15px); 
@@ -61,7 +72,6 @@
             border-color: #1a73e8; 
         }
         
-        /* RESPONSIVE CONTROL BUTTONS */
         .main-call-btn { 
             width: 100%; 
             padding: clamp(14px, 3.5vmin, 20px); 
@@ -112,7 +122,6 @@
             padding-top: 2.5vmin; 
         }
         
-        /* ADAPTIVE WAITING FEED LIST */
         .queue-list { 
             list-style: none; 
             padding: 0; 
@@ -184,6 +193,9 @@
 <div class="card">
     <h2>MediQueue Panel</h2>
     
+    <!-- NEW ELEMENT: Displays the dynamic calendar anchor text -->
+    <div class="date-display" id="liveDateDisplay">Loading Today's Date...</div>
+    
     <label for="roomSelect">Select Active Room:</label>
     <select id="roomSelect" onchange="renderActiveRoom()">
         <option value="1">Room 1 (রুম ১)</option>
@@ -237,6 +249,14 @@
         renderActiveRoom();
     });
 
+    // NEW LOGIC: Renders local clock time format instantly on page access
+    function initializeDateBanner() {
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const calendarString = new Date().toLocaleDateString('en-US', dateOptions);
+        document.getElementById('liveDateDisplay').innerText = "📅 Today: " + calendarString;
+    }
+    initializeDateBanner();
+
     function getSelectedRoom() {
         return document.getElementById('roomSelect').value;
     }
@@ -275,7 +295,7 @@
                         ${downArrow}
                         <button class="now-btn" onclick="callSpecificPatient('${roomNum}', ${index}, '${serial}')">⚡ Call Now</button>
                         <button class="edit-btn" onclick="editQueueItem('${roomNum}', ${index}, '${serial}')">Edit</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', ${index}')">Delete</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', ${index})">Delete</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
@@ -303,7 +323,10 @@
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
         
         let updates = {};
-        updates[`room${roomNum}/queue`] = queueArray;
+        updates[`room${roomNum}`] = {
+            current: roomData.current || '--',
+            queue: queueArray
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates).then(() => {
@@ -325,8 +348,10 @@
         const nextSerial = queueArray.shift();
         
         let updates = {};
-        updates[`room${roomNum}/current`] = nextSerial;
-        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
+        updates[`room${roomNum}`] = {
+            current: nextSerial,
+            queue: queueArray.length > 0 ? queueArray : null
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
@@ -344,7 +369,10 @@
         queueArray[targetIndex] = temp;
 
         let updates = {};
-        updates[`room${roomNum}/queue`] = queueArray;
+        updates[`room${roomNum}`] = {
+            current: roomData.current || '--',
+            queue: queueArray
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates);
@@ -359,8 +387,10 @@
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[`room${roomNum}/current`] = serial;   
-        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
+        updates[`room${roomNum}`] = {
+            current: serial,
+            queue: queueArray.length > 0 ? queueArray : null
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
@@ -377,7 +407,10 @@
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
 
         let updates = {};
-        updates[`room${roomNum}/queue`] = queueArray;
+        updates[`room${roomNum}`] = {
+            current: roomData.current || '--',
+            queue: queueArray
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
         database.ref().update(updates);
     }
@@ -391,8 +424,12 @@
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[`room${roomNum}/queue`] = queueArray.length > 0 ? queueArray : null;
+        updates[`room${roomNum}`] = {
+            current: roomData.current || '--',
+            queue: queueArray.length > 0 ? queueArray : null
+        };
         updates['authSecret'] = "INMAS-Mitford2026!";
+        
         database.ref().update(updates);
     }
 
