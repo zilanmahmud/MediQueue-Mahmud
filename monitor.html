@@ -58,7 +58,7 @@
         .clock-time {
             font-size: 3.2vmin;
             font-weight: bold;
-            color: #22c55e; /* Cyber Green clock readout */
+            color: #22c55e; 
             line-height: 1;
         }
         .clock-date {
@@ -120,9 +120,9 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            object-fit: contain; /* Prevents image distortions regardless of original picture shape */
+            object-fit: contain; 
             opacity: 0;
-            transition: opacity 0.8s ease-in-out; /* Premium cross-fade transition overlay */
+            transition: opacity 0.8s ease-in-out; 
         }
         .poster-viewport img.active {
             opacity: 1;
@@ -212,8 +212,7 @@
     
     <div class="awareness-sidebar">
         <div class="sidebar-caption">জরুরী নির্দেশনা ও স্বাস্থ্য বার্তা (Patient Notices)</div>
-        <div class="poster-viewport" id="posterSliderContainer">
-            </div>
+        <div class="poster-viewport" id="posterSliderContainer"></div>
     </div>
 </div>
 
@@ -236,7 +235,7 @@
     let roomsConfig = [];
     let audioContext = null;
 
-    /* 1. CLOCK ENGINE: Drives localized system ticking increments */
+    /* 1. CLOCK ENGINE */
     function updateLiveClock() {
         const now = new Date();
         document.getElementById('liveDigitalClock').innerText = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -246,11 +245,12 @@
     updateLiveClock();
 
     /* 2. DYNAMIC SLIDESHOW ENGINE */
-    // Change these file names to match the exact photos you upload to GitHub!
+    // Synchronized precisely to your current live repository assets
     const awarenessPostersList = [
-        "poster1.jpg", 
-        "poster2.jpg", 
-        "poster3.jpg"
+        "Poster1.png", 
+        "Poster2.png", 
+        "Poster3.png",
+        "Poster4.png"
     ];
     
     function initSlideshowEngine() {
@@ -272,7 +272,7 @@
                 images[activeIdx].classList.remove('active');
                 activeIdx = (activeIdx + 1) % images.length;
                 images[activeIdx].classList.add('active');
-            }, 8000); // Cycles smoothly to the next poster every 8 seconds
+            }, 8000); 
         }
     }
     initSlideshowEngine();
