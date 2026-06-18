@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ওয়েটিং রুম ডিসপ্লে (Waiting Room Display) - MediQueue Universal Adaptive</title>
+    <title>ওয়েটিং রুম ডিসপ্লে (Waiting Room Display) - MediQueue Terminal Suite</title>
     <style>
         body { 
             font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; 
             background: #0f172a; 
             color: white; 
             margin: 0; 
-            padding: 2vmin; 
+            padding: 1.5vmin; 
             overflow: hidden; 
             height: 100vh; 
             width: 100vw;
@@ -19,39 +19,116 @@
             flex-direction: column;
         }
 
-        .header { 
-            text-align: center; 
-            padding: 1.2vmin 0; 
+        /* FLEX MASTER HEADER WITH INTEGRATED DIGITAL CLOCK */
+        .header-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             background: #1e293b; 
-            border-radius: 12px; 
-            margin-bottom: 2vmin; 
-            border: 1px solid #334155; 
-            flex-shrink: 0; 
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1vmin 2vw;
+            margin-bottom: 1.5vmin;
+            flex-shrink: 0;
         }
-        .header h1 { 
+        .header-left h1 { 
             margin: 0; 
-            font-size: 3.6vmin; 
+            font-size: 3.2vmin; 
             color: #38bdf8; 
             font-weight: bold; 
         }
         .audio-notice { 
-            font-size: 1.8vmin; 
+            font-size: 1.6vmin; 
             color: #94a3b8; 
-            margin: 0.6vh 0 0 0; 
+            margin: 0.4vh 0 0 0; 
             cursor: pointer; 
             text-decoration: underline; 
-            font-weight: 500; 
+        }
+
+        /* Elegant High-Visibility Clock Styling */
+        .header-right-clock {
+            text-align: right;
+            font-family: 'Courier New', Courier, monospace, Arial;
+            background: #0f172a;
+            padding: 0.8vmin 1.5vw;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            min-width: 18vw;
+        }
+        .clock-time {
+            font-size: 3.2vmin;
+            font-weight: bold;
+            color: #22c55e; /* Cyber Green clock readout */
+            line-height: 1;
+        }
+        .clock-date {
+            font-size: 1.3vmin;
+            color: #94a3b8;
+            margin-top: 0.2vh;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         
-        .grid { 
+        /* LAYOUT CORE: Splitting numbers framework from visual media slider */
+        .main-layout-container {
+            display: flex;
+            flex-grow: 1;
+            gap: 1.5vmin;
+            min-height: 0;
+            width: 100%;
+        }
+
+        /* Room dashboard receives 73% viewport space allocation */
+        .grid-workspace { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(2, 1fr);
-            gap: 2vmin; 
-            flex-grow: 1;
+            gap: 1.5vmin; 
+            width: 73%;
+            height: 100%;
             min-height: 0; 
         }
         
+        /* Dedicated Awareness Panel receives remaining 27% widescreen edge space */
+        .awareness-sidebar {
+            width: 27%;
+            height: 100%;
+            background: #1e293b;
+            border: 2px solid #475569;
+            border-radius: 16px;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .sidebar-caption {
+            background: #111827;
+            padding: 1vmin;
+            text-align: center;
+            font-size: 1.5vmin;
+            font-weight: bold;
+            color: #38bdf8;
+            border-bottom: 1px solid #334155;
+            letter-spacing: 0.5px;
+        }
+        .poster-viewport {
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
+            background: #0f172a;
+        }
+        .poster-viewport img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Prevents image distortions regardless of original picture shape */
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out; /* Premium cross-fade transition overlay */
+        }
+        .poster-viewport img.active {
+            opacity: 1;
+        }
+
+        /* CARD INNER STYLES */
         .room-card { 
             background: #1e293b; 
             border-radius: 16px; 
@@ -59,28 +136,26 @@
             flex-direction: column; 
             justify-content: flex-start; 
             align-items: center; 
-            padding: 2vmin; 
-            border: 2px solid #334155; 
+            padding: 1.5vmin; 
+            border: 2px solid #0284c7; 
             box-sizing: border-box; 
             transition: all 0.3s ease; 
             overflow: hidden;
             height: 100%;
             width: 100%;
         }
-
         .room-title { 
-            font-size: 3.4vmin; 
+            font-size: 3.2vmin; 
             font-weight: bold; 
-            margin-bottom: 1.2vmin; 
+            margin-bottom: 1vmin; 
             flex-shrink: 0;
+            color: #38bdf8;
         }
-
-        /* OPTIMIZED: Downscaled, compact horizontal row configuration to save vertical window space */
         .current-box { 
             width: 100%; 
             background: #111827; 
             border-radius: 10px; 
-            padding: 0.8vmin 1.5vmin; 
+            padding: 0.6vmin 1.5vmin; 
             border: 1px solid #374151; 
             box-sizing: border-box; 
             text-align: center; 
@@ -90,21 +165,17 @@
             justify-content: center;
             gap: 1.5vmin;
             flex-shrink: 0;
-            margin-bottom: 1.5vmin;
+            margin-bottom: 1vmin;
         }
-        .current-label { 
-            font-size: 1.8vmin; 
-            font-weight: bold; 
-            color: #94a3b8; 
-        }
+        .current-label { font-size: 1.6vmin; font-weight: bold; color: #94a3b8; }
         .current-number { 
             font-family: Arial, sans-serif; 
-            font-size: 4.8vmin; /* Balanced scale to stay clearly distinct without hogging screen canvas */
+            font-size: 4.4vmin; 
             font-weight: 900; 
             text-shadow: 0 2px 8px rgba(0,0,0,0.6);
             line-height: 1;
+            color: #22c55e;
         }
-        
         .queue-container { 
             width: 100%; 
             display: flex; 
@@ -114,109 +185,35 @@
             overflow: hidden;
             min-height: 0;
         }
-        .queue-label { 
-            font-size: 2vmin; 
-            color: #9ca3af; 
-            font-weight: bold; 
-            margin-bottom: 1.2vmin; 
-            letter-spacing: 0.5px; 
-            flex-shrink: 0;
-        }
-
-        .badge-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1vmin;
-            justify-content: center;
-            align-content: flex-start;
-            width: 100%;
-            overflow-y: auto;
-            scrollbar-width: none; 
-        }
+        .queue-label { font-size: 1.8vmin; color: #9ca3af; font-weight: bold; margin-bottom: 1vmin; flex-shrink: 0; }
+        .badge-grid { display: flex; flex-wrap: wrap; gap: 0.8vmin; justify-content: center; align-content: flex-start; width: 100%; overflow-y: auto; scrollbar-width: none; }
         .badge-grid::-webkit-scrollbar { display: none; }
-
-        .token-badge {
-            background: #0f172a;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            padding: 0.8vmin 2.2vmin;
-            font-family: Arial, sans-serif;
-            font-size: 3.6vmin; 
-            font-weight: 800;
-            color: #e2e8f0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            text-align: center;
-            min-width: 7vmin;
-        }
-        
-        /* Neon Accents per Room Container */
-        #rm1 { border-color: #ef4444; } #rm1 .room-title { color: #f87171; } #rm1 .current-number { color: #ef4444; } #rm1 .token-badge { border-color: #f87171; color: #fecaca; }
-        #rm2 { border-color: #3b82f6; } #rm2 .room-title { color: #60a5fa; } #rm2 .current-number { color: #3b82f6; } #rm2 .token-badge { border-color: #60a5fa; color: #bfdbfe; }
-        #rm3 { border-color: #22c55e; } #rm3 .room-title { color: #4ade80; } #rm3 .current-number { color: #22c55e; } #rm3 .token-badge { border-color: #4ade80; color: #bbf7d0; }
-        #rm4 { border-color: #eab308; } #rm4 .room-title { color: #fde047; } #rm4 .current-number { color: #eab308; } #rm4 .token-badge { border-color: #fde047; color: #fef08a; }
-        .flash { transform: scale(1.01); background: #334155 !important; }
+        .token-badge { background: #0f172a; border: 1px solid #38bdf8; border-radius: 6px; padding: 0.6vmin 1.8vmin; font-family: Arial, sans-serif; font-size: 3.2vmin; font-weight: 800; color: #bfdbfe; text-align: center; min-width: 6vmin; }
+        .flash { transform: scale(1.015); background: #334155 !important; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<div class="header">
-    <h1>আল্ট্রাসনোগ্রাফি ও কালার ডপলার সিরিয়াল বোর্ড (Ultrasonography & Color Doppler Serial Board)</h1>
-    <p class="audio-notice" id="audioBtn" onclick="enableAudio()">🔔 কলিং বেল সাউন্ড চালু করতে এখানে একবার ক্লিক করুন (Click here once to turn on calling bell sound)</p>
+<div class="header-wrapper">
+    <div class="header-left">
+        <h1>আল্ট্রাসনোগ্রাফি ও কালার ডপলার সিরিয়াল বোর্ড (Ultrasonography & Color Doppler Serial Board)</h1>
+        <p class="audio-notice" id="audioBtn" onclick="enableAudio()">🔔 কলিং বেল সাউন্ড চালু করতে এখানে একবার ক্লিক করুন (Click here once to turn on calling bell sound)</p>
+    </div>
+    <div class="header-right-clock">
+        <div class="clock-time" id="liveDigitalClock">00:00:00 AM</div>
+        <div class="clock-date" id="liveCalendarReadout">Loading Calendar...</div>
+    </div>
 </div>
 
-<div class="grid">
-    <!-- ROOM 1 -->
-    <div class="room-card" id="rm1">
-        <div class="room-title">রুম ১ (Room 1)</div>
-        <div class="current-box">
-            <span class="current-label">এখন ভেতরে (Now Serving):</span>
-            <span class="current-number" id="d1">--</span>
-        </div>
-        <div class="queue-container">
-            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
-            <div class="badge-grid" id="q1"></div>
-        </div>
-    </div>
+<div class="main-layout-container">
+    <div class="grid-workspace" id="monitorDisplayGrid"></div>
     
-    <!-- ROOM 2 -->
-    <div class="room-card" id="rm2">
-        <div class="room-title">রুম ২ (Room 2)</div>
-        <div class="current-box">
-            <span class="current-label">এখন ভেতরে (Now Serving):</span>
-            <span class="current-number" id="d2">--</span>
-        </div>
-        <div class="queue-container">
-            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
-            <div class="badge-grid" id="q2"></div>
-        </div>
-    </div>
-    
-    <!-- ROOM 3 -->
-    <div class="room-card" id="rm3">
-        <div class="room-title">রুম ৩ (Room 3)</div>
-        <div class="current-box">
-            <span class="current-label">এখন ভেতরে (Now Serving):</span>
-            <span class="current-number" id="d3">--</span>
-        </div>
-        <div class="queue-container">
-            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
-            <div class="badge-grid" id="q3"></div>
-        </div>
-    </div>
-    
-    <!-- ROOM 4 -->
-    <div class="room-card" id="rm4">
-        <div class="room-title">রুম ৪ (Room 4)</div>
-        <div class="current-box">
-            <span class="current-label">এখন ভেতরে (Now Serving):</span>
-            <span class="current-number" id="d4">--</span>
-        </div>
-        <div class="queue-container">
-            <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
-            <div class="badge-grid" id="q4"></div>
-        </div>
+    <div class="awareness-sidebar">
+        <div class="sidebar-caption">জরুরী নির্দেশনা ও স্বাস্থ্য বার্তা (Patient Notices)</div>
+        <div class="poster-viewport" id="posterSliderContainer">
+            </div>
     </div>
 </div>
 
@@ -235,9 +232,52 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    let localState = { room1: '--', room2: '--', room3: '--', room4: '--' };
+    let localState = {};
+    let roomsConfig = [];
     let audioContext = null;
 
+    /* 1. CLOCK ENGINE: Drives localized system ticking increments */
+    function updateLiveClock() {
+        const now = new Date();
+        document.getElementById('liveDigitalClock').innerText = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        document.getElementById('liveCalendarReadout').innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    setInterval(updateLiveClock, 1000);
+    updateLiveClock();
+
+    /* 2. DYNAMIC SLIDESHOW ENGINE */
+    // Change these file names to match the exact photos you upload to GitHub!
+    const awarenessPostersList = [
+        "poster1.jpg", 
+        "poster2.jpg", 
+        "poster3.jpg"
+    ];
+    
+    function initSlideshowEngine() {
+        const container = document.getElementById('posterSliderContainer');
+        container.innerHTML = '';
+        
+        awarenessPostersList.forEach((src, idx) => {
+            const img = document.createElement('img');
+            img.src = src;
+            if (idx === 0) img.className = 'active';
+            container.appendChild(img);
+        });
+
+        let activeIdx = 0;
+        const images = container.getElementsByTagName('img');
+        
+        if (images.length > 1) {
+            setInterval(() => {
+                images[activeIdx].classList.remove('active');
+                activeIdx = (activeIdx + 1) % images.length;
+                images[activeIdx].classList.add('active');
+            }, 8000); // Cycles smoothly to the next poster every 8 seconds
+        }
+    }
+    initSlideshowEngine();
+
+    /* 3. CLOUD QUEUE NETWORKING SYSTEMS */
     function enableAudio() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -266,41 +306,65 @@
         } catch(e) { console.log(e); }
     }
 
+    database.ref('config/rooms').on('value', (configSnapshot) => {
+        roomsConfig = configSnapshot.val() || [];
+        const gridElement = document.getElementById('monitorDisplayGrid');
+        gridElement.innerHTML = '';
+
+        roomsConfig.forEach(room => {
+            const cardHtml = `
+                <div class="room-card" id="rm_${room.id}">
+                    <div class="room-title">${room.name}</div>
+                    <div class="current-box">
+                        <span class="current-label">এখন ভেতরে (Now Serving):</span>
+                        <span class="current-number" id="d_${room.id}">--</span>
+                    </div>
+                    <div class="queue-container">
+                        <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+                        <div class="badge-grid" id="q_${room.id}"></div>
+                    </div>
+                </div>
+            `;
+            gridElement.innerHTML += cardHtml;
+        });
+
+        roomsConfig.forEach(r => { if (!localState[r.id]) localState[r.id] = '--'; });
+    });
+
     database.ref().on('value', (snapshot) => {
         const data = snapshot.val() || {};
         let shouldPlaySound = false;
 
-        for (let i = 1; i <= 4; i++) {
-            const roomKey = 'room' + i;
-            const roomData = data[roomKey] || {};
-            
+        roomsConfig.forEach(room => {
+            const roomData = data[room.id] || {};
             const currentActive = roomData.current || '--';
-            const displayElement = document.getElementById('d' + i);
-            const cardElement = document.getElementById('rm' + i);
+            
+            const displayElement = document.getElementById('d_' + room.id);
+            const cardElement = document.getElementById('rm_' + room.id);
 
-            if (localState[roomKey] !== currentActive) {
+            if (displayElement && localState[room.id] !== currentActive) {
                 displayElement.innerText = currentActive;
-                localState[roomKey] = currentActive;
+                localState[room.id] = currentActive;
                 shouldPlaySound = true;
 
                 cardElement.classList.add('flash');
                 setTimeout(() => cardElement.classList.remove('flash'), 1200);
             }
 
-            const gridElement = document.getElementById('q' + i);
-            
-            if (roomData.queue) {
-                const sortedSerials = Object.keys(roomData.queue).sort((a,b) => parseInt(a)-parseInt(b)).map(k => roomData.queue[k]).filter(v => v !== null);
-                
-                let badgeHtml = '';
-                sortedSerials.forEach((serial) => {
-                    badgeHtml += `<div class="token-badge">${serial}</div>`;
-                });
-                gridElement.innerHTML = badgeHtml;
-            } else {
-                gridElement.innerHTML = '<div style="color: #475569; font-size: 2.2vmin; margin-top: 2vmin; font-weight: bold;">নেই / ফাঁকা (None / Empty)</div>';
+            const gridElement = document.getElementById('q_' + room.id);
+            if (gridElement) {
+                if (roomData.queue) {
+                    const sortedSerials = Object.keys(roomData.queue).sort((a,b) => parseInt(a)-parseInt(b)).map(k => roomData.queue[k]).filter(v => v !== null);
+                    let badgeHtml = '';
+                    sortedSerials.forEach((serial) => {
+                        badgeHtml += `<div class="token-badge">${serial}</div>`;
+                    });
+                    gridElement.innerHTML = badgeHtml;
+                } else {
+                    gridElement.innerHTML = '<div style="color: #475569; font-size: 2.2vmin; margin-top: 2vmin; font-weight: bold;">নেই / ফাঁকা (None / Empty)</div>';
+                }
             }
-        }
+        });
 
         if (shouldPlaySound) {
             playChime();

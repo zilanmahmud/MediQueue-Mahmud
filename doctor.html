@@ -39,7 +39,7 @@
             font-size: clamp(12px, 2.8vmin, 16px);
             color: #475569;
             font-weight: 600;
-            margin-bottom: 3vmin;
+            margin-bottom: 2vmin;
             background: #f1f5f9;
             padding: 10px;
             border-radius: 8px;
@@ -164,7 +164,39 @@
         .edit-btn { background: #f9ab00; }
         .del-btn { background: #70757a; }
         .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
-        .move-btn { background: #8b5cf6; } /* Purple accent for transfer triggers */
+        .move-btn { background: #8b5cf6; }
+
+        /* DYNAMIC ROOM CONFIGURATION STYLES */
+        .config-toggle-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 3vmin;
+            font-size: 13px;
+        }
+        .config-panel {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 3vmin;
+            display: none;
+        }
+        .config-room-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .config-room-row input { margin: 0; padding: 8px; font-size: 14px; }
+        .config-del-btn { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .config-add-btn { background: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+        .config-save-btn { background: #22c55e; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 15px; }
 
         .reset-section { 
             border-top: 2px solid #e2e8f0; 
@@ -183,7 +215,6 @@
             cursor: pointer; 
             width: 100%; 
         }
-        .reset-btn:hover { background: #334155; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -194,14 +225,17 @@
     <h2>MediQueue Panel</h2>
     
     <div class="date-display" id="liveDateDisplay">Loading Today's Date...</div>
+
+    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ Manage Rooms / Edit Identities</button>
+    <div class="config-panel" id="configPanel">
+        <div id="configRoomsContainer"></div>
+        <button class="config-add-btn" onclick="addRoomToConfig()">➕ Add New Room Workspace</button>
+        <button class="config-save-btn" onclick="saveRoomConfig()">💾 Save & Sync Configurations</button>
+    </div>
     
     <label for="roomSelect">Select Active Room:</label>
     <select id="roomSelect" onchange="updateResetButtonLabel(); renderActiveRoom();">
-        <option value="1">Room 1 (রুম ১)</option>
-        <option value="2">Room 2 (রুম ২)</option>
-        <option value="3">Room 3 (রুম ৩)</option>
-        <option value="4">Room 4 (রুম ৪)</option>
-    </select>
+        </select>
 
     <div class="status-box">
         <label>Now Serving In This Room:</label>
@@ -218,8 +252,7 @@
 
     <label>Upcoming Waiting List:</label>
     <ul class="queue-list" id="queueListDisplay">
-        <!-- Dynamic entries yield here -->
-    </ul>
+        </ul>
 
     <div class="reset-section">
         <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 Reset Selected Room Data</button>
@@ -242,6 +275,28 @@
     const database = firebase.database();
     
     let globalDataState = {};
+    let globalRoomsConfig = [];
+    let localConfigState = [];
+
+    // 1. Dual-Path Listener Syncing Configuration Frameworks
+    database.ref('config/rooms').on('value', (snapshot) => {
+        const rooms = snapshot.val();
+        if (!rooms) {
+            // Initial Seed Default Fallback
+            const defaultRooms = [
+                { id: "room1", name: "Room 1 (রুম ১)" },
+                { id: "room2", name: "Room 2 (রুম ২)" },
+                { id: "room3", name: "Room 3 (রুম ৩)" },
+                { id: "room4", name: "Room 4 (রুম ৪)" }
+            ];
+            database.ref('config/rooms').set(defaultRooms);
+            return;
+        }
+        globalRoomsConfig = rooms;
+        localConfigState = JSON.parse(JSON.stringify(rooms)); // Deep copy for edit panel
+        populateRoomDropdown();
+        renderActiveRoom();
+    });
 
     database.ref().on('value', (snapshot) => {
         globalDataState = snapshot.val() || {};
@@ -256,15 +311,88 @@
     initializeDateBanner();
 
     function getSelectedRoom() {
-        return document.getElementById('roomSelect').value;
+        return document.getElementById('roomSelect').value || "room1";
+    }
+
+    function populateRoomDropdown() {
+        const select = document.getElementById('roomSelect');
+        const currentSelection = select.value;
+        select.innerHTML = '';
+        
+        globalRoomsConfig.forEach(room => {
+            const opt = document.createElement('option');
+            opt.value = room.id;
+            opt.innerText = room.name;
+            select.appendChild(opt);
+        });
+
+        if (globalRoomsConfig.some(r => r.id === currentSelection)) {
+            select.value = currentSelection;
+        } else if (globalRoomsConfig.length > 0) {
+            select.value = globalRoomsConfig[0].id;
+        }
+        updateResetButtonLabel();
     }
 
     function updateResetButtonLabel() {
-        const roomNum = getSelectedRoom();
-        document.getElementById('resetRoomBtn').innerText = `🧹 Reset Room ${roomNum} Data for Next Day`;
+        const select = document.getElementById('roomSelect');
+        const activeRoomName = select.options[select.selectedIndex]?.text || "Selected Room";
+        document.getElementById('resetRoomBtn').innerText = `🧹 Reset ${activeRoomName} Logs`;
     }
-    updateResetButtonLabel();
 
+    /* CONFIGURATION EDIT PANEL CONTROLLERS */
+    function toggleConfigPanel() {
+        const panel = document.getElementById('configPanel');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+            buildConfigPanelUI();
+        }
+    }
+
+    function buildConfigPanelUI() {
+        const container = document.getElementById('configRoomsContainer');
+        container.innerHTML = '';
+        localConfigState.forEach((room, index) => {
+            const row = document.createElement('div');
+            row.className = 'config-room-row';
+            row.innerHTML = `
+                <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="Room Identity Name">
+                <button class="config-del-btn" onclick="removeRoomFromConfig(${index})">✕</button>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    function updateLocalRoomName(index, value) {
+        localConfigState[index].name = value;
+    }
+
+    function removeRoomFromConfig(index) {
+        localConfigState.splice(index, 1);
+        buildConfigPanelUI();
+    }
+
+    function addRoomToConfig() {
+        // Unique ID generator loop tracking
+        const nextIdNum = localConfigState.length + 1;
+        localConfigState.push({
+            id: "room" + Date.now(), 
+            name: `New Room Slot ${nextIdNum}`
+        });
+        buildConfigPanelUI();
+    }
+
+    function saveRoomConfig() {
+        if (localConfigState.length === 0) { alert("You must have at least one room active!"); return; }
+        database.ref('config/rooms').set(localConfigState).then(() => {
+            alert("Room configurations successfully synced across the network!");
+            document.getElementById('configPanel').style.display = 'none';
+        });
+    }
+
+    /* QUEUE MANAGER FUNCTIONAL ENGINE */
     function getCleanQueueArray(roomData) {
         if (!roomData || !roomData.queue) return [];
         return Object.keys(roomData.queue)
@@ -274,8 +402,8 @@
     }
 
     function renderActiveRoom() {
-        const roomNum = getSelectedRoom();
-        const roomData = globalDataState["room" + roomNum] || {};
+        const roomId = getSelectedRoom();
+        const roomData = globalDataState[roomId] || {};
         
         document.getElementById('currentPatientDisplay').innerText = roomData.current || '--';
         
@@ -289,18 +417,18 @@
                 const li = document.createElement('li');
                 li.className = 'queue-item';
 
-                const upArrow = index > 0 ? `<button class="order-btn" onclick="moveOrder('${roomNum}', ${index}, 'up')">▲</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▲</button>`;
-                const downArrow = index < queueArray.length - 1 ? `<button class="order-btn" onclick="moveOrder('${roomNum}', ${index}, 'down')">▼</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▼</button>`;
+                const upArrow = index > 0 ? `<button class="order-btn" onclick="moveOrder('${roomId}', ${index}, 'up')">▲</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▲</button>`;
+                const downArrow = index < queueArray.length - 1 ? `<button class="order-btn" onclick="moveOrder('${roomId}', ${index}, 'down')">▼</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▼</button>`;
 
                 li.innerHTML = `
                     <span>Serial: ${serial}</span>
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
-                        <button class="move-btn" onclick="transferPatient('${roomNum}', ${index}, '${serial}')">➡️ Move</button>
-                        <button class="now-btn" onclick="callSpecificPatient('${roomNum}', ${index}, '${serial}')">⚡ Call Now</button>
-                        <button class="edit-btn" onclick="editQueueItem('${roomNum}', ${index}, '${serial}')">Edit</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomNum}', ${index})">Delete</button>
+                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ Move</button>
+                        <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ Call Now</button>
+                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">Edit</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">Delete</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
@@ -311,26 +439,36 @@
     }
 
     function addPatientToQueue() {
-        const roomNum = getSelectedRoom();
+        const roomId = getSelectedRoom();
         const inputField = document.getElementById('newPatientSerial');
         const serial = inputField.value.trim();
         
-        if (!serial) { 
-            alert("Please input a valid serial number!"); 
-            inputField.focus();
-            return; 
+        if (!serial) { alert("Please input a valid serial number!"); inputField.focus(); return; }
+        
+        let roomData = globalDataState[roomId] || {};
+        
+        // INTERCEPTOR LOGIC: Verify database dates vs device local parameters
+        const todayStr = new Date().toLocaleDateString('en-CA'); // Yields clean "YYYY-MM-DD"
+        const lastReset = roomData.lastResetDate || "";
+
+        if (lastReset !== todayStr && ((roomData.current && roomData.current !== '--') || roomData.queue)) {
+            const resolveStaleData = confirm(`⚠️ FORGOTTEN REGISTRY REMINDER:\nThis workspace retains patient logs from an earlier shift!\n\nClick 'OK' to WIPE yesterday's registry and start fresh.\nClick 'Cancel' to KEEP old entries and append this patient to the existing list.`);
+            
+            if (resolveStaleData) {
+                roomData.current = '--';
+                roomData.queue = null;
+            }
         }
         
-        const roomData = globalDataState["room" + roomNum] || {};
         let queueArray = getCleanQueueArray(roomData);
-        
         queueArray.push(serial);
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
         
         let updates = {};
-        updates[`room${roomNum}`] = {
+        updates[roomId] = {
             current: roomData.current || '--',
-            queue: queueArray
+            queue: queueArray,
+            lastResetDate: todayStr // Lock current date parameters as the active session key
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
@@ -340,77 +478,60 @@
         });
     }
 
-    // NEW INTER-ROOM TRANSFER ARCHITECTURE: Cross-node transactional routing
     function transferPatient(fromRoom, index, serial) {
-        const targetRoomInput = prompt(`Move Serial ${serial} to another room.\nEnter target room number (1, 2, 3, or 4):`);
-        if (targetRoomInput === null) return; // User pressed Cancel
+        let optionsPrompt = "Move Serial " + serial + " to another active workspace:\n";
+        globalRoomsConfig.forEach((r, idx) => {
+            if (r.id !== fromRoom) optionsPrompt += `\nEnter [ ${idx + 1} ] for ${r.name}`;
+        });
         
-        const targetRoomNum = targetRoomInput.trim();
-        if (!['1', '2', '3', '4'].includes(targetRoomNum)) {
-            alert("Invalid choice! You must enter 1, 2, 3, or 4.");
-            return;
-        }
-        if (targetRoomNum === fromRoom) {
-            alert(`Patient is already listed in Room ${fromRoom}!`);
-            return;
-        }
+        const selectionInput = prompt(optionsPrompt);
+        if (selectionInput === null) return;
+        
+        const pickedIdx = parseInt(selectionInput.trim()) - 1;
+        if (isNaN(pickedIdx) || pickedIdx < 0 || pickedIdx >= globalRoomsConfig.length) { alert("Invalid index selection!"); return; }
+        
+        const targetRoomId = globalRoomsConfig[pickedIdx].id;
+        if (targetRoomId === fromRoom) { alert("Patient is already inside that room tree selection!"); return; }
 
-        // 1. Process Source Room Extraction
-        const fromRoomData = globalDataState["room" + fromRoom] || {};
+        const fromRoomData = globalDataState[fromRoom] || {};
         let fromQueue = getCleanQueueArray(fromRoomData);
-        fromQueue.splice(index, 1); // Pluck the item out
+        fromQueue.splice(index, 1);
 
-        // 2. Process Destination Room Insertion
-        const targetRoomData = globalDataState["room" + targetRoomNum] || {};
+        const targetRoomData = globalDataState[targetRoomId] || {};
         let targetQueue = getCleanQueueArray(targetRoomData);
         targetQueue.push(serial);
-        targetQueue.sort((a, b) => parseInt(a) - parseInt(b)); // Keep target room sorted numerically
+        targetQueue.sort((a, b) => parseInt(a) - parseInt(b));
 
-        // 3. Compile Atomic Multi-Node Payload
         let updates = {};
-        updates[`room${fromRoom}`] = {
-            current: fromRoomData.current || '--',
-            queue: fromQueue.length > 0 ? fromQueue : null
-        };
-        updates[`room${targetRoomNum}`] = {
-            current: targetRoomData.current || '--',
-            queue: targetQueue
-        };
+        updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, lastResetDate: fromRoomData.lastResetDate || "" };
+        updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, lastResetDate: targetRoomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
-        // Write atomically to the cloud to guarantee seamless simultaneous screen changes
-        database.ref().update(updates).then(() => {
-            alert(`Serial ${serial} successfully moved to Room ${targetRoomNum}.`);
-        }).catch((err) => {
-            alert("Database write failed during transfer operation.");
-            console.error(err);
-        });
+        database.ref().update(updates);
     }
 
     function callNextPatient() {
-        const roomNum = getSelectedRoom();
-        const roomData = globalDataState["room" + roomNum] || {};
+        const roomId = getSelectedRoom();
+        const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
         
-        if (queueArray.length === 0) {
-            alert("The waiting list for this room is currently empty!");
-            return;
-        }
+        if (queueArray.length === 0) { alert("The waiting list for this room is currently empty!"); return; }
         
         const nextSerial = queueArray.shift();
         
         let updates = {};
-        updates[`room${roomNum}`] = {
+        updates[roomId] = {
             current: nextSerial,
-            queue: queueArray.length > 0 ? queueArray : null
+            queue: queueArray.length > 0 ? queueArray : null,
+            lastResetDate: roomData.lastResetDate || new Date().toLocaleDateString('en-CA')
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
     }
 
-    function moveOrder(roomNum, index, direction) {
-        const roomData = globalDataState["room" + roomNum] || {};
+    function moveOrder(roomId, index, direction) {
+        const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
 
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -421,91 +542,72 @@
         queueArray[targetIndex] = temp;
 
         let updates = {};
-        updates[`room${roomNum}`] = {
-            current: roomData.current || '--',
-            queue: queueArray
-        };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates);
     }
 
-    function callSpecificPatient(roomNum, index, serial) {
-        if (!confirm(`EMERGENCY OVERRIDE:\nAre you sure you want to bypass the queue and call Serial ${serial} to Room ${roomNum} immediately?`)) return;
+    function callSpecificPatient(roomId, index, serial) {
+        if (!confirm(`EMERGENCY OVERRIDE:\nAre you sure you want to call Serial ${serial} immediately?`)) return;
         
-        const roomData = globalDataState["room" + roomNum] || {};
+        const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
-
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[`room${roomNum}`] = {
-            current: serial,
-            queue: queueArray.length > 0 ? queueArray : null
-        };
+        updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
     }
 
-    function editQueueItem(roomNum, index, currentSerial) {
+    function editQueueItem(roomId, index, currentSerial) {
         const newSerial = prompt("Update Serial Number:", currentSerial);
         if (newSerial === null || newSerial.trim() === "") return;
         
-        const roomData = globalDataState["room" + roomNum] || {};
+        const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
 
         queueArray[index] = newSerial.trim();
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
 
         let updates = {};
-        updates[`room${roomNum}`] = {
-            current: roomData.current || '--',
-            queue: queueArray
-        };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         database.ref().update(updates);
     }
 
-    function deleteQueueItem(roomNum, index) {
+    function deleteQueueItem(roomId, index) {
         if (!confirm("Are you sure you want to remove this patient from the line?")) return;
         
-        const roomData = globalDataState["room" + roomNum] || {};
+        const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
-
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[`room${roomNum}`] = {
-            current: roomData.current || '--',
-            queue: queueArray.length > 0 ? queueArray : null
-        };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         database.ref().update(updates);
     }
 
     function resetActiveRoomOnly() {
-        const roomNum = getSelectedRoom();
+        const roomId = getSelectedRoom();
+        const todayStr = new Date().toLocaleDateString('en-CA');
         
-        const confirmFirst = confirm(`🚨 END OF DAY CLEARANCE:\nAre you absolutely sure you want to delete the waiting list and reset the active serving number for Room ${roomNum} only?`);
-        if (!confirmFirst) return;
-
-        const confirmSecond = confirm(`⚠️ FINAL WARNING:\nThis will NOT affect other diagnostic rooms. Wipe data for Room ${roomNum}?`);
-        if (!confirmSecond) return;
+        if (!confirm(`🚨 SHIFT CLEARANCE:\nAre you sure you want to wipe data for this selected room slot?`)) return;
 
         let updates = {};
-        updates[`room${roomNum}`] = {
+        updates[roomId] = {
             current: '--',
-            queue: null
+            queue: null,
+            lastResetDate: todayStr // Overwriting this flag stops future warnings during the same calendar date
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates).then(() => {
-            alert(`Room ${roomNum} has been successfully cleared for the next shift.`);
-        }).catch((err) => {
-            alert("Error clearing room database.");
-            console.error(err);
+            alert(`Room workspace data successfully cleared.`);
         });
     }
 </script>
