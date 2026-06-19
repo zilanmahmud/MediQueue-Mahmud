@@ -37,12 +37,17 @@
             color: #38bdf8; 
             font-weight: bold; 
         }
+        
+        /* Interactive dynamic button text alignment for the audio module */
         .audio-notice { 
             font-size: 1.6vmin; 
-            color: #94a3b8; 
+            color: #f87171; /* High-visibility soft red for initial 'Muted' state */
             margin: 0.4vh 0 0 0; 
             cursor: pointer; 
             text-decoration: underline; 
+            font-weight: 600;
+            display: inline-block;
+            transition: color 0.2s ease;
         }
 
         /* Elegant High-Visibility Clock Styling */
@@ -200,7 +205,7 @@
 <div class="header-wrapper">
     <div class="header-left">
         <h1>আল্ট্রাসনোগ্রাফি ও কালার ডপলার সিরিয়াল বোর্ড (Ultrasonography & Color Doppler Serial Board)</h1>
-        <p class="audio-notice" id="audioBtn" onclick="enableAudio()">🔔 কলিং বেল সাউন্ড চালু করতে এখানে একবার ক্লিক করুন (Click here once to turn on calling bell sound)</p>
+        <p class="audio-notice" id="audioBtn" onclick="toggleAudioSystemState()">🔈 সাউন্ড বন্ধ আছে - চালু করতে এখানে ক্লিক করুন (Sound Off - Click here to Turn On)</p>
     </div>
     <div class="header-right-clock">
         <div class="clock-time" id="liveDigitalClock">00:00:00 AM</div>
@@ -212,7 +217,7 @@
     <div class="grid-workspace" id="monitorDisplayGrid"></div>
     
     <div class="awareness-sidebar">
-        <div class="sidebar-caption">রোগীদের প্রতি নির্দেশনা (Patient Notices)</div>
+        <div class="sidebar-caption">রোগীদের জন্য নির্দেশনা (Directions for Patients)</div>
         <div class="poster-viewport" id="posterSliderContainer"></div>
     </div>
 </div>
@@ -235,6 +240,7 @@
     let localState = {};
     let roomsConfig = [];
     let audioContext = null;
+    let isAudioSystemMuted = true; // Audio initialized safely as muted by default configuration rules
 
     /* 1. CLOCK ENGINE */
     function updateLiveClock() {
@@ -246,7 +252,6 @@
     updateLiveClock();
 
     /* 2. DYNAMIC SLIDESHOW ENGINE */
-    // Fully integrated to cycle completely through your 8 live custom file configurations
     const awarenessPostersList = [
         "Poster1.png", 
         "Poster2.png", 
@@ -277,23 +282,38 @@
                 images[activeIdx].classList.remove('active');
                 activeIdx = (activeIdx + 1) % images.length;
                 images[activeIdx].classList.add('active');
-            }, 8000); // Transitions to the next poster step every 8 seconds smoothly
+            }, 8000); 
         }
     }
     initSlideshowEngine();
 
-    /* 3. CLOUD QUEUE NETWORKING SYSTEMS */
-    function enableAudio() {
+    /* 3. CLOUD QUEUE NETWORKING SYSTEMS WITH TWO-WAY AUDIO TOGGLE SWITCH */
+    function toggleAudioSystemState() {
+        // Build the audio hardware API context if it's the very first activation click
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            document.getElementById('audioBtn').innerText = "🔊 সাউন্ড চালু আছে (Sound Actived)";
-            document.getElementById('audioBtn').style.color = "#4ade80";
-            document.getElementById('audioBtn').style.textDecoration = "none";
+        }
+        
+        isAudioSystemMuted = !isAudioSystemMuted;
+        const btn = document.getElementById('audioBtn');
+        
+        if (isAudioSystemMuted) {
+            btn.innerText = "🔈 সাউন্ড বন্ধ আছে - চালু করতে এখানে ক্লিক করুন (Sound Off - Click here to Turn On)";
+            btn.style.color = "#f87171"; /* Soft Red alert indicator */
+            btn.style.textDecoration = "underline";
+        } else {
+            btn.innerText = "🔊 সাউন্ড চালু আছে - বন্ধ করতে এখানে ক্লিক করুন (Sound On - Click here to Mute)";
+            btn.style.color = "#4ade80"; /* Clear green functional indicator */
+            btn.style.textDecoration = "none";
+            
+            // Generate a quick tap chime to confirm the speaker hardware channel is active
+            playChime();
         }
     }
 
     function playChime() {
-        if (!audioContext) return;
+        // Instantly skip generation calculations if the toggle state is set to muted
+        if (!audioContext || isAudioSystemMuted) return;
         try {
             let t = audioContext.currentTime;
             let osc1 = audioContext.createOscillator();
