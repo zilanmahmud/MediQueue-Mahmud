@@ -338,12 +338,20 @@
         document.getElementById('resetRoomBtn').innerText = `🧹 Reset ${activeRoomName} Logs`;
     }
 
+    /* ADVANCED NATURAL ALPHANUMERIC ALGORITHM UTILITY */
+    function sortLocalConfigStateAlphabetically() {
+        localConfigState.sort((a, b) => {
+            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+        });
+    }
+
     function toggleConfigPanel() {
         const panel = document.getElementById('configPanel');
         if (panel.style.display === 'block') {
             panel.style.display = 'none';
         } else {
             panel.style.display = 'block';
+            sortLocalConfigStateAlphabetically(); // Pre-sort existing nodes upon open sequence
             buildConfigPanelUI();
         }
     }
@@ -363,7 +371,7 @@
     }
 
     function updateLocalRoomName(index, value) {
-        localConfigState[index].name = value;
+        localConfigState[index].name = value; // Avoid sorting directly on input to keep focus active
     }
 
     function removeRoomFromConfig(index) {
@@ -375,13 +383,17 @@
         const nextIdNum = localConfigState.length + 1;
         localConfigState.push({
             id: "room" + Date.now(), 
-            name: `New Room Slot ${nextIdNum}`
+            name: `Room ${nextIdNum}` // Default sequential naming convention
         });
+        sortLocalConfigStateAlphabetically(); // Instant sort alignment upon item addition
         buildConfigPanelUI();
     }
 
     function saveRoomConfig() {
         if (localConfigState.length === 0) { alert("You must have at least one room active!"); return; }
+        
+        sortLocalConfigStateAlphabetically(); // Final verification sort right before database push
+        
         database.ref('config/rooms').set(localConfigState).then(() => {
             alert("Room configurations successfully synced across the network!");
             document.getElementById('configPanel').style.display = 'none';
