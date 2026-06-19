@@ -166,7 +166,6 @@
         .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
         .move-btn { background: #8b5cf6; }
 
-        /* DYNAMIC ROOM CONFIGURATION STYLES */
         .config-toggle-btn {
             background: #64748b;
             color: white;
@@ -226,7 +225,7 @@
     
     <div class="date-display" id="liveDateDisplay">Loading Today's Date...</div>
 
-    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ Manage Rooms / Edit Identities</button>
+    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ Manage Rooms</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ Add New Room Workspace</button>
@@ -277,12 +276,11 @@
     let globalDataState = {};
     let globalRoomsConfig = [];
     let localConfigState = [];
+    let localWarnedState = {}; // Session memory preventing infinite notification feedback loops
 
-    // 1. Dual-Path Listener Syncing Configuration Frameworks
     database.ref('config/rooms').on('value', (snapshot) => {
         const rooms = snapshot.val();
         if (!rooms) {
-            // Initial Seed Default Fallback
             const defaultRooms = [
                 { id: "room1", name: "Room 1 (রুম ১)" },
                 { id: "room2", name: "Room 2 (রুম ২)" },
@@ -293,7 +291,7 @@
             return;
         }
         globalRoomsConfig = rooms;
-        localConfigState = JSON.parse(JSON.stringify(rooms)); // Deep copy for edit panel
+        localConfigState = JSON.parse(JSON.stringify(rooms)); 
         populateRoomDropdown();
         renderActiveRoom();
     });
@@ -340,7 +338,6 @@
         document.getElementById('resetRoomBtn').innerText = `🧹 Reset ${activeRoomName} Logs`;
     }
 
-    /* CONFIGURATION EDIT PANEL CONTROLLERS */
     function toggleConfigPanel() {
         const panel = document.getElementById('configPanel');
         if (panel.style.display === 'block') {
@@ -375,7 +372,6 @@
     }
 
     function addRoomToConfig() {
-        // Unique ID generator loop tracking
         const nextIdNum = localConfigState.length + 1;
         localConfigState.push({
             id: "room" + Date.now(), 
@@ -392,7 +388,6 @@
         });
     }
 
-    /* QUEUE MANAGER FUNCTIONAL ENGINE */
     function getCleanQueueArray(roomData) {
         if (!roomData || !roomData.queue) return [];
         return Object.keys(roomData.queue)
@@ -411,6 +406,24 @@
         queueListDisplay.innerHTML = '';
         
         const queueArray = getCleanQueueArray(roomData);
+
+        // UPDATED UPSTREAM MORNING CHECK: Fires automatically upon room entry or data sync
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const lastReset = roomData.lastResetDate || "";
+
+        if (lastReset !== todayStr && !localWarnedState[roomId] && ((roomData.current && roomData.current !== '--') || queueArray.length > 0)) {
+            localWarnedState[roomId] = true; // Mark warned to avoid popping alerts repeatedly on live database updates
+            
+            // Defers execution slightly to allow UI components to draw cleanly beforehand
+            setTimeout(() => {
+                const activeRoomName = document.getElementById('roomSelect').options[document.getElementById('roomSelect').selectedIndex]?.text || "This room";
+                const wipeStaleData = confirm(`🌞 GOOD MORNING REMINDER:\n"${activeRoomName}" contains leftover patient entries from an earlier shift!\n\nClick 'OK' to reset entries and start today fresh.\nClick 'Cancel' to keep these entries for now.`);
+                
+                if (wipeStaleData) {
+                    executeRoomResetPayload(roomId);
+                }
+            }, 400);
+        }
 
         if (queueArray.length > 0) {
             queueArray.forEach((serial, index) => {
@@ -446,19 +459,7 @@
         if (!serial) { alert("Please input a valid serial number!"); inputField.focus(); return; }
         
         let roomData = globalDataState[roomId] || {};
-        
-        // INTERCEPTOR LOGIC: Verify database dates vs device local parameters
-        const todayStr = new Date().toLocaleDateString('en-CA'); // Yields clean "YYYY-MM-DD"
-        const lastReset = roomData.lastResetDate || "";
-
-        if (lastReset !== todayStr && ((roomData.current && roomData.current !== '--') || roomData.queue)) {
-            const resolveStaleData = confirm(`⚠️ FORGOTTEN REGISTRY REMINDER:\nThis workspace retains patient logs from an earlier shift!\n\nClick 'OK' to WIPE yesterday's registry and start fresh.\nClick 'Cancel' to KEEP old entries and append this patient to the existing list.`);
-            
-            if (resolveStaleData) {
-                roomData.current = '--';
-                roomData.queue = null;
-            }
-        }
+        const todayStr = new Date().toLocaleDateString('en-CA');
         
         let queueArray = getCleanQueueArray(roomData);
         queueArray.push(serial);
@@ -468,7 +469,7 @@
         updates[roomId] = {
             current: roomData.current || '--',
             queue: queueArray,
-            lastResetDate: todayStr // Lock current date parameters as the active session key
+            lastResetDate: roomData.lastResetDate || todayStr
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
@@ -594,20 +595,24 @@
 
     function resetActiveRoomOnly() {
         const roomId = getSelectedRoom();
-        const todayStr = new Date().toLocaleDateString('en-CA');
-        
         if (!confirm(`🚨 SHIFT CLEARANCE:\nAre you sure you want to wipe data for this selected room slot?`)) return;
+        executeRoomResetPayload(roomId);
+    }
 
+    // Isolated reset runner writing clean baseline parameters + timestamp updates
+    function executeRoomResetPayload(roomId) {
+        const todayStr = new Date().toLocaleDateString('en-CA');
         let updates = {};
         updates[roomId] = {
             current: '--',
             queue: null,
-            lastResetDate: todayStr // Overwriting this flag stops future warnings during the same calendar date
+            lastResetDate: todayStr 
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates).then(() => {
-            alert(`Room workspace data successfully cleared.`);
+            localWarnedState[roomId] = true; // Block warning alerts from spawning further for this custom room today
+            alert(`Room workspace successfully reset for today's new shift.`);
         });
     }
 </script>
