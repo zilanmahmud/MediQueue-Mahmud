@@ -245,7 +245,7 @@
 
     <div class="queue-section">
         <label for="newPatientSerial">Enlist New Patient To This Room:</label>
-        <input type="number" id="newPatientSerial" placeholder="Enter Serial Number" pattern="\d*">
+        <input type="number" id="newPatientSerial" placeholder="Enter Serial Number" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
         <button class="add-btn" onclick="addPatientToQueue()">+ Add to Waiting List</button>
     </div>
 
@@ -276,7 +276,7 @@
     let globalDataState = {};
     let globalRoomsConfig = [];
     let localConfigState = [];
-    let localWarnedState = {}; // Session memory preventing infinite notification feedback loops
+    let localWarnedState = {}; 
 
     database.ref('config/rooms').on('value', (snapshot) => {
         const rooms = snapshot.val();
@@ -356,7 +356,7 @@
             row.className = 'config-room-row';
             row.innerHTML = `
                 <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="Room Identity Name">
-                <button class="config-del-btn" onclick="removeRoomFromConfig(${index})">✕</button>
+                <input type="button" class="config-del-btn" value="✕" onclick="removeRoomFromConfig(${index})">
             `;
             container.appendChild(row);
         });
@@ -407,14 +407,12 @@
         
         const queueArray = getCleanQueueArray(roomData);
 
-        // UPDATED UPSTREAM MORNING CHECK: Fires automatically upon room entry or data sync
         const todayStr = new Date().toLocaleDateString('en-CA');
         const lastReset = roomData.lastResetDate || "";
 
         if (lastReset !== todayStr && !localWarnedState[roomId] && ((roomData.current && roomData.current !== '--') || queueArray.length > 0)) {
-            localWarnedState[roomId] = true; // Mark warned to avoid popping alerts repeatedly on live database updates
+            localWarnedState[roomId] = true; 
             
-            // Defers execution slightly to allow UI components to draw cleanly beforehand
             setTimeout(() => {
                 const activeRoomName = document.getElementById('roomSelect').options[document.getElementById('roomSelect').selectedIndex]?.text || "This room";
                 const wipeStaleData = confirm(`🌞 GOOD MORNING REMINDER:\n"${activeRoomName}" contains leftover patient entries from an earlier shift!\n\nClick 'OK' to reset entries and start today fresh.\nClick 'Cancel' to keep these entries for now.`);
@@ -599,7 +597,6 @@
         executeRoomResetPayload(roomId);
     }
 
-    // Isolated reset runner writing clean baseline parameters + timestamp updates
     function executeRoomResetPayload(roomId) {
         const todayStr = new Date().toLocaleDateString('en-CA');
         let updates = {};
@@ -611,7 +608,7 @@
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         database.ref().update(updates).then(() => {
-            localWarnedState[roomId] = true; // Block warning alerts from spawning further for this custom room today
+            localWarnedState[roomId] = true; 
             alert(`Room workspace successfully reset for today's new shift.`);
         });
     }
