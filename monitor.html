@@ -38,10 +38,9 @@
             font-weight: bold; 
         }
         
-        /* Interactive dynamic button text alignment for the audio module */
         .audio-notice { 
             font-size: 1.6vmin; 
-            color: #f87171; /* High-visibility soft red for initial 'Muted' state */
+            color: #f87171; 
             margin: 0.4vh 0 0 0; 
             cursor: pointer; 
             text-decoration: underline; 
@@ -217,7 +216,7 @@
     <div class="grid-workspace" id="monitorDisplayGrid"></div>
     
     <div class="awareness-sidebar">
-        <div class="sidebar-caption">রোগীদের জন্য নির্দেশনা (Directions for Patients)</div>
+        <div class="sidebar-caption">জরুরী নির্দেশনা ও স্বাস্থ্য বার্তা (Patient Notices)</div>
         <div class="poster-viewport" id="posterSliderContainer"></div>
     </div>
 </div>
@@ -240,7 +239,7 @@
     let localState = {};
     let roomsConfig = [];
     let audioContext = null;
-    let isAudioSystemMuted = true; // Audio initialized safely as muted by default configuration rules
+    let isAudioSystemMuted = true; 
 
     /* 1. CLOCK ENGINE */
     function updateLiveClock() {
@@ -278,18 +277,18 @@
         const images = container.getElementsByTagName('img');
         
         if (images.length > 1) {
+            // OPTIMIZED: Delay parameter extended to 15000ms (15 seconds) for a relaxed layout scan pace
             setInterval(() => {
                 images[activeIdx].classList.remove('active');
                 activeIdx = (activeIdx + 1) % images.length;
                 images[activeIdx].classList.add('active');
-            }, 8000); 
+            }, 15000); 
         }
     }
     initSlideshowEngine();
 
-    /* 3. CLOUD QUEUE NETWORKING SYSTEMS WITH TWO-WAY AUDIO TOGGLE SWITCH */
+    /* 3. CLOUD QUEUE NETWORKING SYSTEMS */
     function toggleAudioSystemState() {
-        // Build the audio hardware API context if it's the very first activation click
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -299,20 +298,17 @@
         
         if (isAudioSystemMuted) {
             btn.innerText = "🔈 সাউন্ড বন্ধ আছে - চালু করতে এখানে ক্লিক করুন (Sound Off - Click here to Turn On)";
-            btn.style.color = "#f87171"; /* Soft Red alert indicator */
+            btn.style.color = "#f87171"; 
             btn.style.textDecoration = "underline";
         } else {
             btn.innerText = "🔊 সাউন্ড চালু আছে - বন্ধ করতে এখানে ক্লিক করুন (Sound On - Click here to Mute)";
-            btn.style.color = "#4ade80"; /* Clear green functional indicator */
+            btn.style.color = "#4ade80"; 
             btn.style.textDecoration = "none";
-            
-            // Generate a quick tap chime to confirm the speaker hardware channel is active
             playChime();
         }
     }
 
     function playChime() {
-        // Instantly skip generation calculations if the toggle state is set to muted
         if (!audioContext || isAudioSystemMuted) return;
         try {
             let t = audioContext.currentTime;
