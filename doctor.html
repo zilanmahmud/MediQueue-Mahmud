@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Advanced Queue Manager</title>
+    <title>স্টাফ অ্যাডভান্সড কিউ ম্যানেজার</title>
     <style>
         body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
+            font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; 
             background: #f0f2f5; 
             margin: 0; 
             padding: 2vmin; 
@@ -221,40 +221,42 @@
 <body>
 
 <div class="card">
-    <h2>MediQueue Panel</h2>
+    <h2>মেডিকিউ কন্ট্রোল প্যানেল</h2>
     
-    <div class="date-display" id="liveDateDisplay">Loading Today's Date...</div>
+    <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ Manage Rooms</button>
+    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
-        <button class="config-add-btn" onclick="addRoomToConfig()">➕ Add New Room Workspace</button>
-        <button class="config-save-btn" onclick="saveRoomConfig()">💾 Save & Sync Configurations</button>
+        <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
+        <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
-    <label for="roomSelect">Select Active Room:</label>
+    <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
     <select id="roomSelect" onchange="updateResetButtonLabel(); renderActiveRoom();">
-        </select>
+        <!-- Firebase থেকে ডাইনামিকালি লোড হবে -->
+    </select>
 
     <div class="status-box">
-        <label>Now Serving In This Room:</label>
+        <label>বর্তমানে ভেতরে আছেন:</label>
         <div class="current-number" id="currentPatientDisplay">--</div>
     </div>
 
-    <button class="main-call-btn" onclick="callNextPatient()">🔔 CALL NEXT CHRONOLOGICAL PATIENT</button>
+    <button class="main-call-btn" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
 
     <div class="queue-section">
-        <label for="newPatientSerial">Enlist New Patient To This Room:</label>
-        <input type="number" id="newPatientSerial" placeholder="Enter Serial Number" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <button class="add-btn" onclick="addPatientToQueue()">+ Add to Waiting List</button>
+        <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
+        <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
+        <button class="add-btn" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
-    <label>Upcoming Waiting List:</label>
+    <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
     <ul class="queue-list" id="queueListDisplay">
-        </ul>
+        <!-- রোগীদের তালিকা এখানে দেখাবে -->
+    </ul>
 
     <div class="reset-section">
-        <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 Reset Selected Room Data</button>
+        <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট করুন</button>
     </div>
 </div>
 
@@ -303,8 +305,9 @@
 
     function initializeDateBanner() {
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const calendarString = new Date().toLocaleDateString('en-US', dateOptions);
-        document.getElementById('liveDateDisplay').innerText = "📅 Today: " + calendarString;
+        // স্থানীয় বাংলা ক্যালেন্ডার ফরম্যাটে রূপান্তর
+        const calendarString = new Date().toLocaleDateString('bn-BD', dateOptions);
+        document.getElementById('liveDateDisplay').innerText = "📅 আজকের তারিখ: " + calendarString;
     }
     initializeDateBanner();
 
@@ -334,11 +337,10 @@
 
     function updateResetButtonLabel() {
         const select = document.getElementById('roomSelect');
-        const activeRoomName = select.options[select.selectedIndex]?.text || "Selected Room";
-        document.getElementById('resetRoomBtn').innerText = `🧹 Reset ${activeRoomName} Logs`;
+        const activeRoomName = select.options[select.selectedIndex]?.text || "নির্বাচিত রুম";
+        document.getElementById('resetRoomBtn').innerText = `🧹 ${activeRoomName}-এর সমস্ত ডেটা রিসেট করুন`;
     }
 
-    /* ADVANCED NATURAL ALPHANUMERIC ALGORITHM UTILITY */
     function sortLocalConfigStateAlphabetically() {
         localConfigState.sort((a, b) => {
             return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
@@ -351,7 +353,7 @@
             panel.style.display = 'none';
         } else {
             panel.style.display = 'block';
-            sortLocalConfigStateAlphabetically(); // Pre-sort existing nodes upon open sequence
+            sortLocalConfigStateAlphabetically(); 
             buildConfigPanelUI();
         }
     }
@@ -363,7 +365,7 @@
             const row = document.createElement('div');
             row.className = 'config-room-row';
             row.innerHTML = `
-                <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="Room Identity Name">
+                <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="রুমের নাম (যেমন: রুম ১ বা এক্স-রে)">
                 <input type="button" class="config-del-btn" value="✕" onclick="removeRoomFromConfig(${index})">
             `;
             container.appendChild(row);
@@ -371,7 +373,7 @@
     }
 
     function updateLocalRoomName(index, value) {
-        localConfigState[index].name = value; // Avoid sorting directly on input to keep focus active
+        localConfigState[index].name = value; 
     }
 
     function removeRoomFromConfig(index) {
@@ -383,19 +385,19 @@
         const nextIdNum = localConfigState.length + 1;
         localConfigState.push({
             id: "room" + Date.now(), 
-            name: `Room ${nextIdNum}` // Default sequential naming convention
+            name: `রুম ${nextIdNum}` 
         });
-        sortLocalConfigStateAlphabetically(); // Instant sort alignment upon item addition
+        sortLocalConfigStateAlphabetically(); 
         buildConfigPanelUI();
     }
 
     function saveRoomConfig() {
-        if (localConfigState.length === 0) { alert("You must have at least one room active!"); return; }
+        if (localConfigState.length === 0) { alert("আপনাকে অন্তত একটি রুম সক্রিয় রাখতে হবে!"); return; }
         
-        sortLocalConfigStateAlphabetically(); // Final verification sort right before database push
+        sortLocalConfigStateAlphabetically(); 
         
         database.ref('config/rooms').set(localConfigState).then(() => {
-            alert("Room configurations successfully synced across the network!");
+            alert("রুম কনফিগারেশন সফলভাবে পুরো সিস্টেমে সিঙ্ক হয়েছে!");
             document.getElementById('configPanel').style.display = 'none';
         });
     }
@@ -426,8 +428,8 @@
             localWarnedState[roomId] = true; 
             
             setTimeout(() => {
-                const activeRoomName = document.getElementById('roomSelect').options[document.getElementById('roomSelect').selectedIndex]?.text || "This room";
-                const wipeStaleData = confirm(`🌞 GOOD MORNING REMINDER:\n"${activeRoomName}" contains leftover patient entries from an earlier shift!\n\nClick 'OK' to reset entries and start today fresh.\nClick 'Cancel' to keep these entries for now.`);
+                const activeRoomName = document.getElementById('roomSelect').options[document.getElementById('roomSelect').selectedIndex]?.text || "এই রুম";
+                const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের দিনের নতুন কাজ শুরুর আগে পুরাতন তালিকাটি সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।\nপুরাতন তালিকাটি রেখে দিতে চাইলে 'Cancel' ক্লিক করুন।`);
                 
                 if (wipeStaleData) {
                     executeRoomResetPayload(roomId);
@@ -444,20 +446,20 @@
                 const downArrow = index < queueArray.length - 1 ? `<button class="order-btn" onclick="moveOrder('${roomId}', ${index}, 'down')">▼</button>` : `<button class="order-btn" style="visibility:hidden; pointer-events:none;">▼</button>`;
 
                 li.innerHTML = `
-                    <span>Serial: ${serial}</span>
+                    <span>সিরিয়াল: ${serial}</span>
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
-                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ Move</button>
-                        <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ Call Now</button>
-                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">Edit</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">Delete</button>
+                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ স্থানান্তর</button>
+                        <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ এখনই ডাকুন</button>
+                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">সম্পাদনা</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">মুছে ফেলুন</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
             });
         } else {
-            queueListDisplay.innerHTML = '<li style="color:#94a3b8; text-align:center; padding:10px; font-size:14px;">No patients waiting.</li>';
+            queueListDisplay.innerHTML = '<li style="color:#94a3b8; text-align:center; padding:10px; font-size:14px;">কোনো রোগী অপেক্ষায় নেই।</li>';
         }
     }
 
@@ -466,7 +468,7 @@
         const inputField = document.getElementById('newPatientSerial');
         const serial = inputField.value.trim();
         
-        if (!serial) { alert("Please input a valid serial number!"); inputField.focus(); return; }
+        if (!serial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
         
         let roomData = globalDataState[roomId] || {};
         const todayStr = new Date().toLocaleDateString('en-CA');
@@ -490,19 +492,19 @@
     }
 
     function transferPatient(fromRoom, index, serial) {
-        let optionsPrompt = "Move Serial " + serial + " to another active workspace:\n";
+        let optionsPrompt = "সিরিয়াল নম্বর " + serial + "-কে অন্য রুমে স্থানান্তর করুন:\n";
         globalRoomsConfig.forEach((r, idx) => {
-            if (r.id !== fromRoom) optionsPrompt += `\nEnter [ ${idx + 1} ] for ${r.name}`;
+            if (r.id !== fromRoom) optionsPrompt += `\n[ ${idx + 1} ] চাপুন - ${r.name}-এ পাঠানোর জন্য`;
         });
         
         const selectionInput = prompt(optionsPrompt);
         if (selectionInput === null) return;
         
         const pickedIdx = parseInt(selectionInput.trim()) - 1;
-        if (isNaN(pickedIdx) || pickedIdx < 0 || pickedIdx >= globalRoomsConfig.length) { alert("Invalid index selection!"); return; }
+        if (isNaN(pickedIdx) || pickedIdx < 0 || pickedIdx >= globalRoomsConfig.length) { alert("ভুল নম্বর নির্বাচন করা হয়েছে!"); return; }
         
         const targetRoomId = globalRoomsConfig[pickedIdx].id;
-        if (targetRoomId === fromRoom) { alert("Patient is already inside that room tree selection!"); return; }
+        if (targetRoomId === fromRoom) { alert("রোগী ইতিমধ্যেই এই রুমে তালিকাভুক্ত আছেন!"); return; }
 
         const fromRoomData = globalDataState[fromRoom] || {};
         let fromQueue = getCleanQueueArray(fromRoomData);
@@ -526,7 +528,7 @@
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
         
-        if (queueArray.length === 0) { alert("The waiting list for this room is currently empty!"); return; }
+        if (queueArray.length === 0) { alert("এই রুমের ওয়েটিং লিস্ট বর্তমানে খালি!"); return; }
         
         const nextSerial = queueArray.shift();
         
@@ -560,7 +562,7 @@
     }
 
     function callSpecificPatient(roomId, index, serial) {
-        if (!confirm(`EMERGENCY OVERRIDE:\nAre you sure you want to call Serial ${serial} immediately?`)) return;
+        if (!confirm(`জরুরী ডাক (Emergency Override):\nআপনি কি নিশ্চিতভাবে সিরিয়াল নম্বর ${serial}-কে এখনই ভেতরে ডাকতে চান?`)) return;
         
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
@@ -574,7 +576,7 @@
     }
 
     function editQueueItem(roomId, index, currentSerial) {
-        const newSerial = prompt("Update Serial Number:", currentSerial);
+        const newSerial = prompt("সিরিয়াল নম্বর পরিবর্তন করুন:", currentSerial);
         if (newSerial === null || newSerial.trim() === "") return;
         
         const roomData = globalDataState[roomId] || {};
@@ -590,7 +592,7 @@
     }
 
     function deleteQueueItem(roomId, index) {
-        if (!confirm("Are you sure you want to remove this patient from the line?")) return;
+        if (!confirm("আপনি কি নিশ্চিতভাবে এই রোগীকে ওয়েটিং লিস্ট থেকে বাদ দিতে চান?")) return;
         
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
@@ -605,7 +607,7 @@
 
     function resetActiveRoomOnly() {
         const roomId = getSelectedRoom();
-        if (!confirm(`🚨 SHIFT CLEARANCE:\nAre you sure you want to wipe data for this selected room slot?`)) return;
+        if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এই রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
         executeRoomResetPayload(roomId);
     }
 
@@ -621,7 +623,7 @@
 
         database.ref().update(updates).then(() => {
             localWarnedState[roomId] = true; 
-            alert(`Room workspace successfully reset for today's new shift.`);
+            alert(`রুমের ডেটা সফলভাবে রিসেট করা হয়েছে।`);
         });
     }
 </script>

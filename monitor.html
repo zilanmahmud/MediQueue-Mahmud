@@ -251,6 +251,7 @@
     updateLiveClock();
 
     /* 2. DYNAMIC SLIDESHOW ENGINE */
+    // নতুন Poster9.png যুক্ত করে স্লাইডশো লিস্ট আপডেট করা হয়েছে
     const awarenessPostersList = [
         "Poster1.png", 
         "Poster2.png", 
@@ -259,7 +260,8 @@
         "Poster5.png",
         "Poster6.png",
         "Poster7.png",
-        "Poster8.png"
+        "Poster8.png",
+        "Poster9.png"
     ];
     
     function initSlideshowEngine() {
@@ -277,7 +279,7 @@
         const images = container.getElementsByTagName('img');
         
         if (images.length > 1) {
-            // OPTIMIZED: Delay parameter extended to 15000ms (15 seconds) for a relaxed layout scan pace
+            // প্রতিটি স্লাইড ১৫ সেকেন্ড (১৫০০০ মিলিসেকেন্ড) পর পর পরিবর্তিত হবে
             setInterval(() => {
                 images[activeIdx].classList.remove('active');
                 activeIdx = (activeIdx + 1) % images.length;
