@@ -15,6 +15,7 @@
             align-items: flex-start;
             min-height: 100vh;
             box-sizing: border-box;
+            transition: background 0.3s ease;
         }
         
         .card { 
@@ -25,6 +26,8 @@
             width: 100%; 
             max-width: 520px; 
             box-sizing: border-box;
+            border-top: 10px solid #1a73e8; /* ডাইনামিকালি পরিবর্তিত হবে */
+            transition: border-color 0.3s ease;
         }
         
         h2 { 
@@ -32,6 +35,7 @@
             margin: 0 0 1vmin 0; 
             text-align: center; 
             font-size: clamp(20px, 5vmin, 28px);
+            transition: color 0.3s ease;
         }
 
         .date-display {
@@ -69,6 +73,7 @@
             font-weight: bold; 
             color: #1a73e8; 
             border-color: #1a73e8; 
+            transition: all 0.3s ease;
         }
         
         .main-call-btn { 
@@ -83,9 +88,7 @@
             cursor: pointer; 
             margin-bottom: 2.5vmin; 
             box-shadow: 0 4px 12px rgba(52,168,83,0.3); 
-            transition: background 0.2s;
         }
-        .main-call-btn:hover { background: #2c9247; }
         
         .add-btn { 
             background: #1a73e8; 
@@ -98,8 +101,8 @@
             cursor: pointer; 
             width: 100%; 
             margin-bottom: 2.5vmin; 
+            transition: background 0.3s ease;
         }
-        .add-btn:hover { background: #155cb4; }
         
         .status-box { 
             padding: 2vmin; 
@@ -114,6 +117,7 @@
             font-weight: 900; 
             color: #ea4335; 
             margin: 0.5vmin 0; 
+            transition: color 0.3s ease;
         }
         
         .queue-section { 
@@ -220,8 +224,8 @@
 </head>
 <body>
 
-<div class="card">
-    <h2>মেডিকিউ কন্ট্রোল প্যানেল</h2>
+<div class="card" id="mainWorkspaceCard">
+    <h2 id="mainHeaderTitle">মেডিকিউ কন্ট্রোল প্যানেল</h2>
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
@@ -229,31 +233,29 @@
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
-        <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
+        <button class="config-save-btn" onclick="saveRoomConfig()">💾 Konfigurasi সেভ ও সিঙ্ক করুন</button>
     </div>
     
     <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
-    <select id="roomSelect" onchange="updateResetButtonLabel(); renderActiveRoom();">
-        <!-- Firebase থেকে ডাইনামিকালি লোড হবে -->
-    </select>
+    <select id="roomSelect" onchange="applyDynamicRoomTheme(); updateResetButtonLabel(); renderActiveRoom();">
+        </select>
 
     <div class="status-box">
         <label>বর্তমানে ভেতরে আছেন:</label>
         <div class="current-number" id="currentPatientDisplay">--</div>
     </div>
 
-    <button class="main-call-btn" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
+    <button class="main-call-btn" id="mainCallButton" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
 
     <div class="queue-section">
         <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
         <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <button class="add-btn" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
+        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
     <ul class="queue-list" id="queueListDisplay">
-        <!-- রোগীদের তালিকা এখানে দেখাবে -->
-    </ul>
+        </ul>
 
     <div class="reset-section">
         <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট করুন</button>
@@ -280,6 +282,15 @@
     let localConfigState = [];
     let localWarnedState = {}; 
 
+    // ৫টি চমৎকার ক্লিনিক্যাল কালার কোডিং থিম ম্যাট্রিক্স
+    const uiThemes = [
+        { primary: '#1a73e8', text: '#1a73e8', bg: '#f8fafc' }, // রাজকীয় নীল
+        { primary: '#10b981', text: '#10b981', bg: '#f0fdf4' }, // পান্না সবুজ
+        { primary: '#e11d48', text: '#e11d48', bg: '#fff1f2' }, // রুবি লাল
+        { primary: '#b45309', text: '#b45309', bg: '#fffbeb' }, // অ্যাম্বার সোনালী
+        { primary: '#7c3aed', text: '#7c3aed', bg: '#faf5ff' }  // পার্পল বেগুনী
+    ];
+
     database.ref('config/rooms').on('value', (snapshot) => {
         const rooms = snapshot.val();
         if (!rooms) {
@@ -295,6 +306,7 @@
         globalRoomsConfig = rooms;
         localConfigState = JSON.parse(JSON.stringify(rooms)); 
         populateRoomDropdown();
+        applyDynamicRoomTheme();
         renderActiveRoom();
     });
 
@@ -305,7 +317,6 @@
 
     function initializeDateBanner() {
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        // স্থানীয় বাংলা ক্যালেন্ডার ফরম্যাটে রূপান্তর
         const calendarString = new Date().toLocaleDateString('bn-BD', dateOptions);
         document.getElementById('liveDateDisplay').innerText = "📅 আজকের তারিখ: " + calendarString;
     }
@@ -313,6 +324,26 @@
 
     function getSelectedRoom() {
         return document.getElementById('roomSelect').value || "room1";
+    }
+
+    // ১. ডাইনামিক ইউজার ইন্টারফেস থিম ইঞ্জিন
+    function applyDynamicRoomTheme() {
+        const select = document.getElementById('roomSelect');
+        const activeIndex = select.selectedIndex >= 0 ? select.selectedIndex : 0;
+        const theme = uiThemes[activeIndex % uiThemes.length];
+
+        const card = document.getElementById('mainWorkspaceCard');
+        const header = document.getElementById('mainHeaderTitle');
+        const addBtn = document.getElementById('addPatientButton');
+        const currentNum = document.getElementById('currentPatientDisplay');
+
+        card.style.borderColor = theme.primary;
+        header.style.color = theme.primary;
+        select.style.borderColor = theme.primary;
+        select.style.color = theme.primary;
+        addBtn.style.backgroundColor = theme.primary;
+        currentNum.style.color = theme.primary;
+        document.body.style.backgroundColor = theme.bg;
     }
 
     function populateRoomDropdown() {
@@ -393,9 +424,7 @@
 
     function saveRoomConfig() {
         if (localConfigState.length === 0) { alert("আপনাকে অন্তত একটি রুম সক্রিয় রাখতে হবে!"); return; }
-        
         sortLocalConfigStateAlphabetically(); 
-        
         database.ref('config/rooms').set(localConfigState).then(() => {
             alert("রুম কনফিগারেশন সফলভাবে পুরো সিস্টেমে সিঙ্ক হয়েছে!");
             document.getElementById('configPanel').style.display = 'none';
@@ -463,16 +492,107 @@
         }
     }
 
+    // ২. গ্লোবাল ক্রস-রুম ডুপ্লিকেশন ইন্টারসেপ্টর ইঞ্জিন (০ বর্জন সহ)
     function addPatientToQueue() {
         const roomId = getSelectedRoom();
         const inputField = document.getElementById('newPatientSerial');
-        const serial = inputField.value.trim();
+        const rawSerial = inputField.value.trim();
         
-        if (!serial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
+        if (!rawSerial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
         
+        // বাম পাশের অবান্তর ০-সমূহ স্বয়ংক্রিয়ভাবে মুছে ইন্টিজারে রূপান্তর
+        const normalizedInputInt = parseInt(rawSerial, 10);
+        const serial = String(normalizedInputInt); // ডেটাবেজে বিশুদ্ধ টেক্সট আকারে সেভ হবে
+
+        let duplicateFound = false;
+        let duplicateRoomId = null;
+        let duplicateIndexInQueue = -1;
+        let duplicateIsCurrentlyServing = false;
+
+        // সমস্ত সক্রিয় রুমে স্ক্যানিং অপারেশন চালানো হচ্ছে
+        globalRoomsConfig.forEach(room => {
+            const rData = globalDataState[room.id] || {};
+            
+            // ক. 'Serving Now' এ পরীক্ষা
+            if (rData.current && rData.current !== '--' && parseInt(rData.current, 10) === normalizedInputInt) {
+                duplicateFound = true;
+                duplicateRoomId = room.id;
+                duplicateIsCurrentlyServing = true;
+            }
+            
+            // খ. 'Waiting Queue' এ পরীক্ষা
+            const currentQueue = getCleanQueueArray(rData);
+            const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt);
+            if (foundIdx !== -1) {
+                duplicateFound = true;
+                duplicateRoomId = room.id;
+                duplicateIndexInQueue = foundIdx;
+                duplicateIsCurrentlyServing = false;
+            }
+        });
+
+        // যদি সিস্টেমে ডুপ্লিকেট সিরিয়াল খুঁজে পাওয়া যায়
+        if (duplicateFound) {
+            const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId)?.name || "অন্য একটি রুম";
+            const targetRoomName = globalRoomsConfig.find(r => r.id === roomId)?.name || "বর্তমান রুম";
+
+            let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
+            if (duplicateRoomId === roomId) {
+                promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
+            } else {
+                promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
+            }
+
+            const confirmMove = confirm(promptMsg);
+            if (!confirmMove) {
+                inputField.value = '';
+                inputField.focus();
+                return; // অপারেশন বাতিল
+            }
+
+            // ডুপ্লিকেট ফাইলটি পুরাতন রুমের নোড থেকে রিমুভ করার প্রস্তুতি
+            let updates = {};
+            const oldRoomData = globalDataState[duplicateRoomId] || {};
+            let oldQueue = getCleanQueueArray(oldRoomData);
+            let oldCurrent = oldRoomData.current || '--';
+
+            if (duplicateIsCurrentlyServing) {
+                oldCurrent = '--';
+            } else if (duplicateIndexInQueue !== -1) {
+                oldQueue.splice(duplicateIndexInQueue, 1);
+            }
+
+            updates[duplicateRoomId] = {
+                current: oldCurrent,
+                queue: oldQueue.length > 0 ? oldQueue : null,
+                lastResetDate: oldRoomData.lastResetDate || ""
+            };
+
+            // বর্তমান রুমে যুক্ত করার প্রস্তুতি
+            let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
+            let currentQueue = getCleanQueueArray(currentRoomData);
+            
+            currentQueue.push(serial);
+            currentQueue.sort((a, b) => parseInt(a) - parseInt(b));
+
+            updates[roomId] = {
+                current: currentRoomData.current || '--',
+                queue: currentQueue,
+                lastResetDate: currentRoomData.lastResetDate || new Date().toLocaleDateString('en-CA')
+            };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+
+            // মাল্টি-নোড অ্যাটমিক ট্রানজেকশন পুশ
+            database.ref().update(updates).then(() => {
+                inputField.value = '';
+                inputField.focus();
+            });
+            return;
+        }
+
+        // কোনো ডুপ্লিকেট না থাকলে সাধারণ সংযোজন নিয়ম
         let roomData = globalDataState[roomId] || {};
         const todayStr = new Date().toLocaleDateString('en-CA');
-        
         let queueArray = getCleanQueueArray(roomData);
         queueArray.push(serial);
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
