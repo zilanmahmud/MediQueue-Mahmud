@@ -19,15 +19,15 @@
         }
         
         .card { 
-            background: white; 
+            background: #ffffff; 
             padding: clamp(15px, 4vmin, 30px); 
             border-radius: 16px; 
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
             width: 100%; 
             max-width: 520px; 
             box-sizing: border-box;
-            border-top: 10px solid #1a73e8; /* ডাইনামিকালি পরিবর্তিত হবে */
-            transition: border-color 0.3s ease;
+            border: 3px solid #1a73e8; 
+            transition: all 0.3s ease;
         }
         
         h2 { 
@@ -36,44 +36,48 @@
             text-align: center; 
             font-size: clamp(20px, 5vmin, 28px);
             transition: color 0.3s ease;
+            font-weight: 800;
         }
 
         .date-display {
             text-align: center;
             font-size: clamp(12px, 2.8vmin, 16px);
-            color: #475569;
-            font-weight: 600;
+            color: #334155;
+            font-weight: 700;
             margin-bottom: 2vmin;
-            background: #f1f5f9;
+            background: rgba(255, 255, 255, 0.6);
             padding: 10px;
             border-radius: 8px;
-            border: 1px dashed #cbd5e1;
+            border: 1px solid rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
         }
         
         label { 
             font-weight: bold; 
-            color: #4a5568; 
+            color: #1e293b; 
             font-size: clamp(11px, 2.5vmin, 15px);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        select, input { 
+        /* ইনপুট ফিল্ডের ব্যাকগ্রাউন্ড সর্বদা সাদা থাকবে যেন রঙিন কার্ডে স্পষ্ট দেখায় */
+        select, input[type="number"], input[type="text"] { 
             width: 100%; 
             padding: clamp(10px, 2.5vmin, 15px); 
             font-size: clamp(16px, 3.5vmin, 22px); 
-            border: 2px solid #dadce0; 
+            border: 2px solid #cbd5e1; 
             border-radius: 8px; 
             margin: 1vmin 0 2.5vmin 0; 
             box-sizing: border-box; 
+            background-color: #ffffff !important;
+            color: #0f172a;
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
         select { 
-            background-color: #f8fafc; 
-            font-weight: bold; 
             color: #1a73e8; 
             border-color: #1a73e8; 
-            transition: all 0.3s ease;
+            cursor: pointer;
         }
         
         .main-call-btn { 
@@ -82,13 +86,15 @@
             font-size: clamp(16px, 3.8vmin, 22px); 
             font-weight: bold; 
             color: white; 
-            background: #34a853; 
+            background: #16a34a; 
             border: none; 
             border-radius: 10px; 
             cursor: pointer; 
             margin-bottom: 2.5vmin; 
-            box-shadow: 0 4px 12px rgba(52,168,83,0.3); 
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3); 
+            transition: background 0.2s;
         }
+        .main-call-btn:hover { background: #15803d; }
         
         .add-btn { 
             background: #1a73e8; 
@@ -101,27 +107,29 @@
             cursor: pointer; 
             width: 100%; 
             margin-bottom: 2.5vmin; 
-            transition: background 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
         
         .status-box { 
             padding: 2vmin; 
-            background: #f8fafc; 
-            border-radius: 8px; 
-            border: 1px solid #e2e8f0; 
+            background: rgba(255, 255, 255, 0.7); 
+            border-radius: 10px; 
+            border: 2px solid rgba(0, 0, 0, 0.05); 
             margin-bottom: 2.5vmin; 
             text-align: center; 
         }
         .current-number { 
-            font-size: clamp(28px, 6vmin, 45px); 
+            font-size: clamp(32px, 7vmin, 50px); 
             font-weight: 900; 
-            color: #ea4335; 
+            color: #dc2626; 
             margin: 0.5vmin 0; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: color 0.3s ease;
         }
         
         .queue-section { 
-            border-top: 2px dashed #e2e8f0; 
+            border-top: 2px dashed rgba(0, 0, 0, 0.1); 
             padding-top: 2.5vmin; 
         }
         
@@ -135,17 +143,18 @@
             justify-content: space-between; 
             align-items: center; 
             padding: clamp(8px, 2vmin, 14px); 
-            background: #f8fafc; 
+            background: #ffffff; 
             margin-bottom: 1vmin; 
             border-radius: 8px; 
             border: 1px solid #e2e8f0; 
             flex-wrap: wrap; 
             gap: 1.5vmin; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .queue-item span { 
             font-size: clamp(14px, 3.2vmin, 19px); 
             font-weight: bold; 
-            color: #334155; 
+            color: #1e293b; 
             min-width: max-content; 
         }
         
@@ -164,14 +173,14 @@
             color: white; 
         }
         
-        .now-btn { background: #e11d48; } 
-        .edit-btn { background: #f9ab00; }
-        .del-btn { background: #70757a; }
+        .now-btn { background: #dc2626; } 
+        .edit-btn { background: #d97706; }
+        .del-btn { background: #4b5563; }
         .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
-        .move-btn { background: #8b5cf6; }
+        .move-btn { background: #7c3aed; }
 
         .config-toggle-btn {
-            background: #64748b;
+            background: #475569;
             color: white;
             border: none;
             padding: 8px;
@@ -183,8 +192,8 @@
             font-size: 13px;
         }
         .config-panel {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 3vmin;
@@ -196,19 +205,19 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .config-room-row input { margin: 0; padding: 8px; font-size: 14px; }
+        .config-room-row input[type="text"] { margin: 0; padding: 8px; font-size: 14px; }
         .config-del-btn { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .config-add-btn { background: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
-        .config-save-btn { background: #22c55e; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 15px; }
+        .config-save-btn { background: #16a34a; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 15px; }
 
         .reset-section { 
-            border-top: 2px solid #e2e8f0; 
+            border-top: 2px solid rgba(0, 0, 0, 0.1); 
             margin-top: 3.5vmin; 
             padding-top: 2.5vmin; 
             text-align: center; 
         }
         .reset-btn { 
-            background: #475569; 
+            background: #334155; 
             color: white; 
             border: none; 
             padding: clamp(10px, 2.5vmin, 14px) 20px; 
@@ -233,7 +242,7 @@
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
-        <button class="config-save-btn" onclick="saveRoomConfig()">💾 Konfigurasi সেভ ও সিঙ্ক করুন</button>
+        <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
     <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
@@ -282,13 +291,13 @@
     let localConfigState = [];
     let localWarnedState = {}; 
 
-    // ৫টি চমৎকার ক্লিনিক্যাল কালার কোডিং থিম ম্যাট্রিক্স
+    // স্পষ্ট ও সুন্দর ভিজ্যুয়ালাইজেশনের জন্য কাস্টমাইজড ৫টি থিম কালার ম্যাট্রিক্স
     const uiThemes = [
-        { primary: '#1a73e8', text: '#1a73e8', bg: '#f8fafc' }, // রাজকীয় নীল
-        { primary: '#10b981', text: '#10b981', bg: '#f0fdf4' }, // পান্না সবুজ
-        { primary: '#e11d48', text: '#e11d48', bg: '#fff1f2' }, // রুবি লাল
-        { primary: '#b45309', text: '#b45309', bg: '#fffbeb' }, // অ্যাম্বার সোনালী
-        { primary: '#7c3aed', text: '#7c3aed', bg: '#faf5ff' }  // পার্পল বেগুনী
+        { primary: '#1e40af', cardBg: '#e0f2fe', bodyBg: '#bae6fd' }, // রুম ১: উজ্জ্বল নীল
+        { primary: '#047857', cardBg: '#d1fae5', bodyBg: '#a7f3d0' }, // রুম ২: উজ্জ্বল সবুজ
+        { primary: '#b91c1c', cardBg: '#fee2e2', bodyBg: '#fecaca' }, // রুম ৩: উজ্জ্বল লাল
+        { primary: '#b45309', cardBg: '#fef3c7', bodyBg: '#fde68a' }, // রুম ৪: আপনার ব্রাউন/অ্যাম্বার (conspicuous শেড)
+        { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  // রুম ৫: গাঢ় বেগুনী
     ];
 
     database.ref('config/rooms').on('value', (snapshot) => {
@@ -326,7 +335,7 @@
         return document.getElementById('roomSelect').value || "room1";
     }
 
-    // ১. ডাইনামিক ইউজার ইন্টারফেস থিম ইঞ্জিন
+    // আপগ্রেডেড ইন্টারফেস কালার ইঞ্জিন (মোবাইল ফোরগ্রাউন্ড প্লাস ব্যাকগ্রাউন্ড কনস্পিকুয়াস করা হয়েছে)
     function applyDynamicRoomTheme() {
         const select = document.getElementById('roomSelect');
         const activeIndex = select.selectedIndex >= 0 ? select.selectedIndex : 0;
@@ -337,13 +346,18 @@
         const addBtn = document.getElementById('addPatientButton');
         const currentNum = document.getElementById('currentPatientDisplay');
 
+        // কার্ড ফোরগ্রাউন্ড এবং চারপাশের ব্যাকগ্রাউন্ড কালার অ্যাসাইনমেন্ট
+        card.style.backgroundColor = theme.cardBg;
         card.style.borderColor = theme.primary;
         header.style.color = theme.primary;
+        
         select.style.borderColor = theme.primary;
         select.style.color = theme.primary;
+        
         addBtn.style.backgroundColor = theme.primary;
         currentNum.style.color = theme.primary;
-        document.body.style.backgroundColor = theme.bg;
+        
+        document.body.style.backgroundColor = theme.bodyBg;
     }
 
     function populateRoomDropdown() {
@@ -488,11 +502,10 @@
                 queueListDisplay.appendChild(li);
             });
         } else {
-            queueListDisplay.innerHTML = '<li style="color:#94a3b8; text-align:center; padding:10px; font-size:14px;">কোনো রোগী অপেক্ষায় নেই।</li>';
+            queueListDisplay.innerHTML = '<li style="color:#475569; text-align:center; padding:10px; font-size:15px; font-weight:bold; background:rgba(255,255,255,0.5); border-radius:8px;">কোনো রোগী অপেক্ষায় নেই।</li>';
         }
     }
 
-    // ২. গ্লোবাল ক্রস-রুম ডুপ্লিকেশন ইন্টারসেপ্টর ইঞ্জিন (০ বর্জন সহ)
     function addPatientToQueue() {
         const roomId = getSelectedRoom();
         const inputField = document.getElementById('newPatientSerial');
@@ -500,29 +513,25 @@
         
         if (!rawSerial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
         
-        // বাম পাশের অবান্তর ০-সমূহ স্বয়ংক্রিয়ভাবে মুছে ইন্টিজারে রূপান্তর
         const normalizedInputInt = parseInt(rawSerial, 10);
-        const serial = String(normalizedInputInt); // ডেটাবেজে বিশুদ্ধ টেক্সট আকারে সেভ হবে
+        const serial = String(normalizedInputInt); 
 
         let duplicateFound = false;
         let duplicateRoomId = null;
         let duplicateIndexInQueue = -1;
         let duplicateIsCurrentlyServing = false;
 
-        // সমস্ত সক্রিয় রুমে স্ক্যানিং অপারেশন চালানো হচ্ছে
         globalRoomsConfig.forEach(room => {
             const rData = globalDataState[room.id] || {};
             
-            // ক. 'Serving Now' এ পরীক্ষা
             if (rData.current && rData.current !== '--' && parseInt(rData.current, 10) === normalizedInputInt) {
                 duplicateFound = true;
                 duplicateRoomId = room.id;
                 duplicateIsCurrentlyServing = true;
             }
             
-            // খ. 'Waiting Queue' এ পরীক্ষা
             const currentQueue = getCleanQueueArray(rData);
-            const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt);
+            const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt)
             if (foundIdx !== -1) {
                 duplicateFound = true;
                 duplicateRoomId = room.id;
@@ -531,7 +540,6 @@
             }
         });
 
-        // যদি সিস্টেমে ডুপ্লিকেট সিরিয়াল খুঁজে পাওয়া যায়
         if (duplicateFound) {
             const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId)?.name || "অন্য একটি রুম";
             const targetRoomName = globalRoomsConfig.find(r => r.id === roomId)?.name || "বর্তমান রুম";
@@ -547,10 +555,9 @@
             if (!confirmMove) {
                 inputField.value = '';
                 inputField.focus();
-                return; // অপারেশন বাতিল
+                return; 
             }
 
-            // ডুপ্লিকেট ফাইলটি পুরাতন রুমের নোড থেকে রিমুভ করার প্রস্তুতি
             let updates = {};
             const oldRoomData = globalDataState[duplicateRoomId] || {};
             let oldQueue = getCleanQueueArray(oldRoomData);
@@ -568,7 +575,6 @@
                 lastResetDate: oldRoomData.lastResetDate || ""
             };
 
-            // বর্তমান রুমে যুক্ত করার প্রস্তুতি
             let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
             let currentQueue = getCleanQueueArray(currentRoomData);
             
@@ -582,7 +588,6 @@
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
 
-            // মাল্টি-নোড অ্যাটমিক ট্রানজেকশন পুশ
             database.ref().update(updates).then(() => {
                 inputField.value = '';
                 inputField.focus();
@@ -590,7 +595,6 @@
             return;
         }
 
-        // কোনো ডুপ্লিকেট না থাকলে সাধারণ সংযোজন নিয়ম
         let roomData = globalDataState[roomId] || {};
         const todayStr = new Date().toLocaleDateString('en-CA');
         let queueArray = getCleanQueueArray(roomData);
