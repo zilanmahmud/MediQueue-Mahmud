@@ -94,7 +94,6 @@
         }
         .main-call-btn:hover { background: #15803d; }
 
-        /* ভুল সংশোধন বা UNDO বাটনের কাস্টম সিএসএস স্টাইল */
         .undo-btn {
             width: 100%;
             padding: clamp(10px, 2.2vmin, 14px);
@@ -108,7 +107,7 @@
             margin-bottom: 2.5vmin;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
-            display: none; /* ডিফল্ট অবস্থায় হাইড থাকবে */
+            display: none; 
         }
         .undo-btn:hover { background: #cbd5e1; }
         
@@ -142,7 +141,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* রুমের লাইভ পরিসংখ্যান কাউন্টার টেক্সট ডিজাইন */
         .room-stats-statement {
             font-size: clamp(12px, 2.8vmin, 15px);
             color: #334155;
@@ -265,7 +263,8 @@
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ルーム রুম ম্যানেজমেন্ট</button>
+    <!-- ফিক্সড: ভাঙা জাপানি হরফ মুছে ফেলা হয়েছে -->
+    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
@@ -280,20 +279,18 @@
     <div class="status-box">
         <label>বর্তমানে ভেতরে আছেন:</label>
         <div class="current-number" id="currentPatientDisplay">--</div>
-        
-        <!-- ডাইনামিক লাইভ পরিসংখ্যান কাউন্টার এরিয়া -->
         <div class="room-stats-statement" id="roomStatsDisplay">ইতিমধ্যে সম্পন্ন: ০ জন | মোট তালিকাভুক্ত: ০ জন</div>
     </div>
 
     <button class="main-call-btn" id="mainCallButton" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
     
-    <!-- ভুল সংশোধন / UNDO অ্যাকশন ট্রিগার বাটন -->
     <button class="undo-btn" id="undoActionButton" onclick="triggerUndoLastAction()">↩️ ভুল সংশোধন / সর্বশেষ কাজ বাতিল করুন (Undo)</button>
 
     <div class="queue-section">
         <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
         <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েटिंग লিস্টে যুক্ত করুন</button>
+        <!-- ফিক্সড: ভাঙা ও মিশ্রিত বাংলা ক্যারেক্টার শুদ্ধ করা হয়েছে -->
+        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
@@ -325,7 +322,7 @@
     let globalRoomsConfig = [];
     let localConfigState = [];
     let localWarnedState = {}; 
-    let lastActionBackupPayload = null; // গ্লোবাল ব্যাকআপ স্টেট হোল্ডার
+    let lastActionBackupPayload = null; 
 
     const uiThemes = [
         { primary: '#1e40af', cardBg: '#e0f2fe', bodyBg: '#bae6fd' }, // রুম ১: উজ্জ্বল নীল
@@ -483,16 +480,14 @@
                      .filter(val => val !== null && val !== undefined);
     }
 
-    /* ১. গ্লোবাল ভুল সংশোধন (UNDO INTERCEPTOR) কোর ইঞ্জিন */
     function captureBackupSnapshot(updates) {
         let backup = {};
         for (let key in updates) {
             if (key === 'authSecret') continue;
-            // ডেটাবেজে সাবমিট হওয়ার ঠিক আগের স্টেটটি নিখুঁতভাবে অবিকল ক্লোন করে ব্যাকআপে রাখা হচ্ছে
             backup[key] = globalDataState[key] ? JSON.parse(JSON.stringify(globalDataState[key])) : null;
         }
         lastActionBackupPayload = backup;
-        document.getElementById('undoActionButton').style.display = 'block'; // বাটন দৃশ্যমান করুন
+        document.getElementById('undoActionButton').style.display = 'block'; 
     }
 
     function triggerUndoLastAction() {
@@ -503,7 +498,7 @@
 
         database.ref().update(updates).then(() => {
             lastActionBackupPayload = null;
-            document.getElementById('undoActionButton').style.display = 'none'; // বাটন হাইড করুন
+            document.getElementById('undoActionButton').style.display = 'none'; 
             alert("সর্বশেষ কাজটি সফলভাবে পূর্বের অবস্থায় ফিরিয়ে নেওয়া (Undo) হয়েছে!");
         });
     }
@@ -524,7 +519,6 @@
         
         const queueArray = getCleanQueueArray(roomData);
 
-        // ২. গ্লোবাল ম্যাথমেটিক্যাল পরিসংখ্যান ক্যালকুলেটর ইঞ্জিন
         const examined = parseInt(roomData.examinedCount || 0, 10);
         const inProgress = (roomData.current && roomData.current !== '--') ? 1 : 0;
         const totalEnlisted = examined + inProgress + queueArray.length;
@@ -657,7 +651,7 @@
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
 
-            captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+            captureBackupSnapshot(updates); 
 
             database.ref().update(updates).then(() => {
                 inputField.value = '';
@@ -681,7 +675,7 @@
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates).then(() => {
             inputField.value = '';
@@ -718,7 +712,7 @@
         updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, examinedCount: targetRoomData.examinedCount || 0, lastResetDate: targetRoomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -732,7 +726,6 @@
         
         const nextSerial = queueArray.shift();
         
-        // পূর্বের রোগী যদি রুমে থেকে থাকেন, তাকে সম্পন্ন বা Examined বলে গণ্য করে কাউন্টার ১ বাড়ানো হচ্ছে
         let currentExaminedCount = parseInt(roomData.examinedCount || 0, 10);
         if (roomData.current && roomData.current !== '--') {
             currentExaminedCount += 1;
@@ -747,7 +740,7 @@
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -767,7 +760,7 @@
         updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -788,7 +781,7 @@
         updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, examinedCount: currentExaminedCount, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -807,7 +800,7 @@
         updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -823,7 +816,7 @@
         updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates);
     }
@@ -840,12 +833,12 @@
         updates[roomId] = {
             current: '--',
             queue: null,
-            examinedCount: 0, // নতুন শিফট রিসেটে সম্পন্ন কাউন্টার ০ করা হচ্ছে
+            examinedCount: 0, 
             lastResetDate: todayStr 
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
-        captureBackupSnapshot(updates); // ব্যাকআপ সেভ
+        captureBackupSnapshot(updates); 
 
         database.ref().update(updates).then(() => {
             localWarnedState[roomId] = true; 
