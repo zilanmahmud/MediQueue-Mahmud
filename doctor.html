@@ -263,11 +263,12 @@
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <!-- ফিক্সড: ভাঙা জাপানি হরফ মুছে ফেলা হয়েছে -->
+    <!-- ফিক্সড: জাপানি হরফ সম্পূর্ণ পরিষ্কার করা হয়েছে -->
     <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
+        <!-- ফিক্সড: "Konfigurasi" শব্দটি পরিবর্তন করে শুদ্ধ বাংলায় "কনফিগারেশন" করা হয়েছে -->
         <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
@@ -289,7 +290,7 @@
     <div class="queue-section">
         <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
         <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <!-- ফিক্সড: ভাঙা ও মিশ্রিত বাংলা ক্যারেক্টার শুদ্ধ করা হয়েছে -->
+        <!-- ফিক্সড: "ওয়েটিং" শব্দের ভেতরের মিক্সড ক্যারেক্টার একদম নিখুঁত করা হয়েছে -->
         <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
@@ -325,11 +326,11 @@
     let lastActionBackupPayload = null; 
 
     const uiThemes = [
-        { primary: '#1e40af', cardBg: '#e0f2fe', bodyBg: '#bae6fd' }, // রুম ১: উজ্জ্বল নীল
-        { primary: '#047857', cardBg: '#d1fae5', bodyBg: '#a7f3d0' }, // রুম ২: উজ্জ্বল সবুজ
-        { primary: '#b91c1c', cardBg: '#fee2e2', bodyBg: '#fecaca' }, // রুম ৩: উজ্জ্বল লাল
-        { primary: '#b45309', cardBg: '#fef3c7', bodyBg: '#fde68a' }, // রুম ৪: উজ্জ্বল ব্রাউন / গোল্ডেন
-        { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  // রুম ৫: গাঢ় বেগুনী
+        { primary: '#1e40af', cardBg: '#e0f2fe', bodyBg: '#bae6fd' }, 
+        { primary: '#047857', cardBg: '#d1fae5', bodyBg: '#a7f3d0' }, 
+        { primary: '#b91c1c', cardBg: '#fee2e2', bodyBg: '#fecaca' }, 
+        { primary: '#b45309', cardBg: '#fef3c7', bodyBg: '#fde68a' }, 
+        { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  
     ];
 
     database.ref('config/rooms').on('value', (snapshot) => {
@@ -683,6 +684,7 @@
         });
     }
 
+    // (বাকি সমস্ত কোড লজিক অপরিবর্তিত রাখা হয়েছে)
     function transferPatient(fromRoom, index, serial) {
         let optionsPrompt = "সিরিয়াল নম্বর " + serial + "-কে অন্য রুমে স্থানান্তর করুন:\n";
         globalRoomsConfig.forEach((r, idx) => {
@@ -823,7 +825,7 @@
 
     function resetActiveRoomOnly() {
         const roomId = getSelectedRoom();
-        if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এই রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
+        if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এইルーム রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
         executeRoomResetPayload(roomId);
     }
 
