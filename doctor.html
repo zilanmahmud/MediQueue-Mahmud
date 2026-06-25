@@ -259,7 +259,7 @@
 <body>
 
 <div class="card" id="mainWorkspaceCard">
-    <h2>মেডিকিউ কন্ট্রোল প্যানেল</h2>
+    <h2 id="mainHeaderTitle">মেডিকিউ কন্ট্রোল প্যানেল</h2>
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
@@ -272,8 +272,7 @@
     
     <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
     <select id="roomSelect" onchange="clearUndoStateOnRoomSwitch(); applyDynamicRoomTheme(); updateResetButtonLabel(); renderActiveRoom();">
-        <!-- Firebase থেকে লোড হবে -->
-    </select>
+        </select>
 
     <div class="status-box">
         <label>বর্তমানে ভেতরে আছেন:</label>
@@ -293,8 +292,7 @@
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
     <ul class="queue-list" id="queueListDisplay">
-        <!-- রোগীদের তালিকা -->
-    </ul>
+        </ul>
 
     <div class="reset-section">
         <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট করুন</button>
@@ -465,7 +463,7 @@
         if (localConfigState.length === 0) { alert("আপনাকে অন্তত একটি রুম সক্রিয় রাখতে হবে!"); return; }
         sortLocalConfigStateAlphabetically(); 
         database.ref('config/rooms').set(localConfigState).then(() => {
-            alert("রুম কনফিগারেশন সফলভাবে পুরো系统中 সিঙ্ক হয়েছে!");
+            alert("রুম কনফিগারেশন সফলভাবে পুরো সিস্টেমে সিঙ্ক হয়েছে!");
             document.getElementById('configPanel').style.display = 'none';
         });
     }
@@ -478,6 +476,7 @@
                      .filter(val => val !== null && val !== undefined);
     }
 
+    /* ৩. অল্ড-ব্রাউজার কমপ্যাটিবল অবজেক্ট ক্লোনিং (উইন্ডোজ/মোবাইল প্রোডাকশন সেফ) */
     function captureBackupSnapshot(updates) {
         let backup = {};
         for (let key in updates) {
@@ -606,7 +605,7 @@
 
             let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
             if (duplicateRoomId === roomId) {
-                promptMsg += `আপনাকে এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
+                promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
             } else {
                 promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
             }
@@ -812,7 +811,7 @@
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         captureBackupSnapshot(updates); 
@@ -822,7 +821,6 @@
 
     function resetActiveRoomOnly() {
         const roomId = getSelectedRoom();
-        // ফিক্সড: "এইルーム রুমের" টাইপোটি সংশোধন করে সম্পূর্ণ শুদ্ধ বাংলা "এই রুমের" করা হয়েছে।
         if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এই রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
         executeRoomResetPayload(roomId);
     }
