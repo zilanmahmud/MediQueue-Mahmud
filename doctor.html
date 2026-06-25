@@ -259,22 +259,20 @@
 <body>
 
 <div class="card" id="mainWorkspaceCard">
-    <h2 id="mainHeaderTitle">মেডিকিউ কন্ট্রোল প্যানেল</h2>
+    <h2>মেডিকিউ কন্ট্রোল প্যানেল</h2>
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <!-- ফিক্সড: জাপানি হরফ সম্পূর্ণ পরিষ্কার করা হয়েছে -->
     <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
-        <!-- ফিক্সড: "Konfigurasi" শব্দটি পরিবর্তন করে শুদ্ধ বাংলায় "কনফিগারেশন" করা হয়েছে -->
         <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
     <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
     <select id="roomSelect" onchange="clearUndoStateOnRoomSwitch(); applyDynamicRoomTheme(); updateResetButtonLabel(); renderActiveRoom();">
-        <!-- Firebase থেকে ডাইনামিকালি লোড হবে -->
+        <!-- Firebase থেকে লোড হবে -->
     </select>
 
     <div class="status-box">
@@ -290,13 +288,12 @@
     <div class="queue-section">
         <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
         <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <!-- ফিক্সড: "ওয়েটিং" শব্দের ভেতরের মিক্সড ক্যারেক্টার একদম নিখুঁত করা হয়েছে -->
         <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
     <ul class="queue-list" id="queueListDisplay">
-        <!-- রোগীদের তালিকা এখানে দেখাবে -->
+        <!-- রোগীদের তালিকা -->
     </ul>
 
     <div class="reset-section">
@@ -410,7 +407,7 @@
 
     function updateResetButtonLabel() {
         const select = document.getElementById('roomSelect');
-        const activeRoomName = select.options[select.selectedIndex]?.text || "নির্বাচিত রুম";
+        const activeRoomName = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : "নির্বাচিত রুম";
         document.getElementById('resetRoomBtn').innerText = `🧹 ${activeRoomName}-এর সমস্ত ডেটা রিসেট করুন`;
     }
 
@@ -468,7 +465,7 @@
         if (localConfigState.length === 0) { alert("আপনাকে অন্তত একটি রুম সক্রিয় রাখতে হবে!"); return; }
         sortLocalConfigStateAlphabetically(); 
         database.ref('config/rooms').set(localConfigState).then(() => {
-            alert("রুম কনফিগারেশন সফলভাবে পুরো সিস্টেমে সিঙ্ক হয়েছে!");
+            alert("রুম কনফিগারেশন সফলভাবে পুরো系统中 সিঙ্ক হয়েছে!");
             document.getElementById('configPanel').style.display = 'none';
         });
     }
@@ -533,7 +530,8 @@
             localWarnedState[roomId] = true; 
             
             setTimeout(() => {
-                const activeRoomName = document.getElementById('roomSelect').options[document.getElementById('roomSelect').selectedIndex]?.text || "এই রুম";
+                const selectEl = document.getElementById('roomSelect');
+                const activeRoomName = selectEl.options[selectEl.selectedIndex] ? selectEl.options[selectEl.selectedIndex].text : "এই রুম";
                 const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের দিনের নতুন কাজ শুরুর আগে পুরাতন তালিকাটি সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।\nপুরাতন তালিকাটি রেখে দিতে চাইলে 'Cancel' ক্লিক করুন।`);
                 
                 if (wipeStaleData) {
@@ -603,12 +601,12 @@
         });
 
         if (duplicateFound) {
-            const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId)?.name || "অন্য একটি রুম";
-            const targetRoomName = globalRoomsConfig.find(r => r.id === roomId)?.name || "বর্তমান রুম";
+            const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId) ? globalRoomsConfig.find(r => r.id === duplicateRoomId).name : "অন্য একটি রুম";
+            const targetRoomName = globalRoomsConfig.find(r => r.id === roomId) ? globalRoomsConfig.find(r => r.id === roomId).name : "বর্তমান রুম";
 
             let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
             if (duplicateRoomId === roomId) {
-                promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
+                promptMsg += `আপনাকে এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
             } else {
                 promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
             }
@@ -684,7 +682,6 @@
         });
     }
 
-    // (বাকি সমস্ত কোড লজিক অপরিবর্তিত রাখা হয়েছে)
     function transferPatient(fromRoom, index, serial) {
         let optionsPrompt = "সিরিয়াল নম্বর " + serial + "-কে অন্য রুমে স্থানান্তর করুন:\n";
         globalRoomsConfig.forEach((r, idx) => {
@@ -815,7 +812,7 @@
         queueArray.splice(index, 1);
 
         let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         captureBackupSnapshot(updates); 
@@ -825,7 +822,8 @@
 
     function resetActiveRoomOnly() {
         const roomId = getSelectedRoom();
-        if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এইルーム রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
+        // ফিক্সড: "এইルーム রুমের" টাইপোটি সংশোধন করে সম্পূর্ণ শুদ্ধ বাংলা "এই রুমের" করা হয়েছে।
+        if (!confirm(`🚨 শিফট সমাপ্তি:\nআপনি কি নিশ্চিতভাবে এই রুমের সমস্ত রোগীর তালিকা মুছে ফেলতে চান?`)) return;
         executeRoomResetPayload(roomId);
     }
 
