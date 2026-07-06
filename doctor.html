@@ -476,7 +476,31 @@
                      .filter(val => val !== null && val !== undefined);
     }
 
-    /* ৩. অল্ড-ব্রাউজার কমপ্যাটিবল অবজেক্ট ক্লোনিং (উইন্ডোজ/মোবাইল প্রোডাকশন সেফ) */
+    function getCleanAllEnlistedArray(roomData) {
+        if (!roomData || !roomData.allEnlisted) return [];
+        return Object.keys(roomData.allEnlisted)
+                     .map(function(key) { return roomData.allEnlisted[key]; })
+                     .filter(function(val) { return val !== null && val !== undefined; });
+    }
+
+    function addToAllEnlistedUnique(allEnlistedArray, serial) {
+        const serialInt = parseInt(serial, 10);
+        const exists = allEnlistedArray.some(function(item) {
+            return parseInt(item, 10) === serialInt;
+        });
+        if (!exists) {
+            allEnlistedArray.push(serial);
+        }
+        return allEnlistedArray;
+    }
+
+    function removeFromAllEnlisted(allEnlistedArray, serial) {
+        const serialInt = parseInt(serial, 10);
+        return allEnlistedArray.filter(function(item) {
+            return parseInt(item, 10) !== serialInt;
+        });
+    }
+
     function captureBackupSnapshot(updates) {
         let backup = {};
         for (let key in updates) {
@@ -515,10 +539,20 @@
         queueListDisplay.innerHTML = '';
         
         const queueArray = getCleanQueueArray(roomData);
+        const allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
-        const examined = parseInt(roomData.examinedCount || 0, 10);
-        const inProgress = (roomData.current && roomData.current !== '--') ? 1 : 0;
-        const totalEnlisted = examined + inProgress + queueArray.length;
+        const totalEnlisted = allEnlistedArray.length;
+        let examined = 0;
+        const currentPatient = roomData.current || '--';
+        
+        allEnlistedArray.forEach(function(serial) {
+            const serialInt = parseInt(serial, 10);
+            const isCurrent = (currentPatient !== '--' && parseInt(currentPatient, 10) === serialInt);
+            const isInQueue = queueArray.some(function(qItem) { return parseInt(qItem, 10) === serialInt; });
+            if (!isCurrent && !isInQueue) {
+                examined++;
+            }
+        });
         
         document.getElementById('roomStatsDisplay').innerHTML = `ইতিমধ্যে সম্পন্ন: <strong>${examined}</strong> জন &nbsp;|&nbsp; মোট তালিকাভুক্ত: <strong>${totalEnlisted}</strong> জন`;
 
@@ -531,6 +565,8 @@
             setTimeout(() => {
                 const selectEl = document.getElementById('roomSelect');
                 const activeRoomName = selectEl.options[selectEl.selectedIndex] ? selectEl.options[selectEl.selectedIndex].text : "এই রুম";
+                
+                // ফিক্সড: "confirm suicide" বাগটি সম্পূর্ণ মুছে স্ট্যান্ডার্ড জাভাস্ক্রিপ্ট "confirm" বসানো হয়েছে
                 const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের দিনের নতুন কাজ শুরুর আগে পুরাতন তালিকাটি সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।\nপুরাতন তালিকাটি রেখে দিতে চাইলে 'Cancel' ক্লিক করুন।`);
                 
                 if (wipeStaleData) {
@@ -621,30 +657,37 @@
             const oldRoomData = globalDataState[duplicateRoomId] || {};
             let oldQueue = getCleanQueueArray(oldRoomData);
             let oldCurrent = oldRoomData.current || '--';
+            let oldAllEnlisted = getCleanAllEnlistedArray(oldRoomData);
 
             if (duplicateIsCurrentlyServing) {
                 oldCurrent = '--';
             } else if (duplicateIndexInQueue !== -1) {
                 oldQueue.splice(duplicateIndexInQueue, 1);
             }
+            oldAllEnlisted = removeFromAllEnlisted(oldAllEnlisted, serial);
 
             updates[duplicateRoomId] = {
                 current: oldCurrent,
                 queue: oldQueue.length > 0 ? oldQueue : null,
-                examinedCount: oldRoomData.examinedCount || 0,
+                allEnlisted: oldAllEnlisted.length > 0 ? oldAllEnlisted : null,
                 lastResetDate: oldRoomData.lastResetDate || ""
             };
 
             let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
             let currentQueue = getCleanQueueArray(currentRoomData);
-            
+            let currentAllEnlisted = getCleanAllEnlistedArray(currentRoomData);
+
+            currentQueue = currentQueue.filter(item => parseInt(item, 10) !== normalizedInputInt);
             currentQueue.push(serial);
             currentQueue.sort((a, b) => parseInt(a) - parseInt(b));
+
+            currentAllEnlisted = removeFromAllEnlisted(currentAllEnlisted, serial);
+            currentAllEnlisted = addToAllEnlistedUnique(currentAllEnlisted, serial);
 
             updates[roomId] = {
                 current: currentRoomData.current || '--',
                 queue: currentQueue,
-                examinedCount: currentRoomData.examinedCount || 0,
+                allEnlisted: currentAllEnlisted,
                 lastResetDate: currentRoomData.lastResetDate || new Date().toLocaleDateString('en-CA')
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
@@ -661,14 +704,18 @@
         let roomData = globalDataState[roomId] || {};
         const todayStr = new Date().toLocaleDateString('en-CA');
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+        
         queueArray.push(serial);
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
         
+        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
+
         let updates = {};
         updates[roomId] = {
             current: roomData.current || '--',
             queue: queueArray,
-            examinedCount: roomData.examinedCount || 0,
+            allEnlisted: allEnlistedArray,
             lastResetDate: roomData.lastResetDate || todayStr
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
@@ -698,16 +745,20 @@
 
         const fromRoomData = globalDataState[fromRoom] || {};
         let fromQueue = getCleanQueueArray(fromRoomData);
+        let fromAllEnlisted = getCleanAllEnlistedArray(fromRoomData);
         fromQueue.splice(index, 1);
+        fromAllEnlisted = removeFromAllEnlisted(fromAllEnlisted, serial);
 
         const targetRoomData = globalDataState[targetRoomId] || {};
         let targetQueue = getCleanQueueArray(targetRoomData);
+        let targetAllEnlisted = getCleanAllEnlistedArray(targetRoomData);
         targetQueue.push(serial);
         targetQueue.sort((a, b) => parseInt(a) - parseInt(b));
+        targetAllEnlisted = addToAllEnlistedUnique(targetAllEnlisted, serial);
 
         let updates = {};
-        updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, examinedCount: fromRoomData.examinedCount || 0, lastResetDate: fromRoomData.lastResetDate || "" };
-        updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, examinedCount: targetRoomData.examinedCount || 0, lastResetDate: targetRoomData.lastResetDate || "" };
+        updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, allEnlisted: fromAllEnlisted.length > 0 ? fromAllEnlisted : null, lastResetDate: fromRoomData.lastResetDate || "" };
+        updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, allEnlisted: targetAllEnlisted, lastResetDate: targetRoomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         captureBackupSnapshot(updates); 
@@ -719,21 +770,18 @@
         const roomId = getSelectedRoom();
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
         
         if (queueArray.length === 0) { alert("এই রুমের ওয়েটিং লিস্ট বর্তমানে খালি!"); return; }
         
         const nextSerial = queueArray.shift();
-        
-        let currentExaminedCount = parseInt(roomData.examinedCount || 0, 10);
-        if (roomData.current && roomData.current !== '--') {
-            currentExaminedCount += 1;
-        }
+        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, nextSerial);
 
         let updates = {};
         updates[roomId] = {
             current: nextSerial,
             queue: queueArray.length > 0 ? queueArray : null,
-            examinedCount: currentExaminedCount,
+            allEnlisted: allEnlistedArray,
             lastResetDate: roomData.lastResetDate || new Date().toLocaleDateString('en-CA')
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
@@ -746,6 +794,7 @@
     function moveOrder(roomId, index, direction) {
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
         const targetIndex = direction === 'up' ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= queueArray.length) return;
@@ -755,7 +804,7 @@
         queueArray[targetIndex] = temp;
 
         let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
 
         captureBackupSnapshot(updates); 
@@ -768,15 +817,12 @@
         
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
         queueArray.splice(index, 1);
-
-        let currentExaminedCount = parseInt(roomData.examinedCount || 0, 10);
-        if (roomData.current && roomData.current !== '--') {
-            currentExaminedCount += 1;
-        }
+        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
 
         let updates = {};
-        updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, examinedCount: currentExaminedCount, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         captureBackupSnapshot(updates); 
@@ -790,12 +836,19 @@
         
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
-        queueArray[index] = newSerial.trim();
+        const oldSerial = queueArray[index];
+        const newSerialClean = newSerial.trim();
+        
+        queueArray[index] = newSerialClean;
         queueArray.sort((a, b) => parseInt(a) - parseInt(b));
 
+        allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, oldSerial);
+        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, newSerialClean);
+
         let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         captureBackupSnapshot(updates); 
@@ -808,10 +861,14 @@
         
         const roomData = globalDataState[roomId] || {};
         let queueArray = getCleanQueueArray(roomData);
+        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+        const deletedSerial = queueArray[index];
+        
         queueArray.splice(index, 1);
+        allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, deletedSerial);
 
         let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, examinedCount: roomData.examinedCount || 0, lastResetDate: roomData.lastResetDate || "" };
+        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null, lastResetDate: roomData.lastResetDate || "" };
         updates['authSecret'] = "INMAS-Mitford2026!";
         
         captureBackupSnapshot(updates); 
@@ -831,7 +888,7 @@
         updates[roomId] = {
             current: '--',
             queue: null,
-            examinedCount: 0, 
+            allEnlisted: null, 
             lastResetDate: todayStr 
         };
         updates['authSecret'] = "INMAS-Mitford2026!";
@@ -840,7 +897,7 @@
 
         database.ref().update(updates).then(() => {
             localWarnedState[roomId] = true; 
-            alert(`রুমের ডেটা সফলভাবে রিসেট করা হয়েছে।`);
+            alert("রুমের ডেটা সফলভাবে রিসেট করা হয়েছে।");
         });
     }
 </script>
