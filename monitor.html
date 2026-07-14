@@ -81,7 +81,7 @@
             width: 100%;
         }
 
-        /* রুম ড্যাশবোর্ড প্যানেল (৬০% জায়গা) */
+        /* room dashboard layout allocation */
         .grid-workspace { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -91,7 +91,7 @@
             min-height: 0; 
         }
         
-        /* নির্দেশনা ও স্বাস্থ্য বার্তা প্যানেল (৪০% জায়গা) */
+        /* awareness sidebar allocation */
         .awareness-sidebar {
             width: 40%;
             height: 100%;
@@ -120,17 +120,16 @@
             position: relative;
             background: #0f172a;
         }
+        
+        /* লো-এন্ড জিপইউ এর জন্য ট্রানজিশন অপ্টিমাইজেশন করা হয়েছে */
         .poster-viewport img {
             position: absolute;
             width: 100%;
             height: 100%;
             text-align: center;
             object-fit: contain; 
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out; 
-        }
-        .poster-viewport img.active {
             opacity: 1;
+            transition: opacity 0.4s ease-in-out; 
         }
 
         /* CARD INNER STYLES */
@@ -144,7 +143,7 @@
             padding: 1.5vmin; 
             border: 3px solid #334155; 
             box-sizing: border-box; 
-            transition: all 0.3s ease; 
+            transition: border-color 0.3s ease; 
             overflow: hidden;
             height: 100%;
             width: 100%;
@@ -153,7 +152,7 @@
         .room-title { 
             font-size: 3vmin; 
             font-weight: bold; 
-            margin-bottom: 1.5vmin; /* ব্যাজ চলে যাওয়ায় মার্জিন কিছুটা সামঞ্জস্য করা হয়েছে */
+            margin-bottom: 1.5vmin; 
             flex-shrink: 0;
             color: #38bdf8;
         }
@@ -197,17 +196,14 @@
         .badge-grid::-webkit-scrollbar { display: none; }
         .token-badge { background: #0f172a; border: 1px solid #38bdf8; border-radius: 6px; padding: 0.6vmin 1.8vmin; font-family: Arial, sans-serif; font-size: 3vmin; font-weight: 800; color: #bfdbfe; text-align: center; min-width: 6vmin; }
         
-        /* ওয়ান-টাইম পেরিফেরাল ফ্লাশ অ্যানিমেশন */
         .flash { 
             animation: peripheralAlert 1.5s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @keyframes peripheralAlert {
-            0% { background: #eab308; border-color: #ffffff; transform: scale(1.03); }
-            30% { background: #eab308; }
-            100% { background: #1e293b; border-color: #334155; transform: scale(1); }
+            0% { background: #eab308; border-color: #ffffff; }
+            100% { background: #1e293b; border-color: #334155; }
         }
 
-        /* সর্বশেষ ডাক পাওয়া রুমের জন্য অনবরত জ্বলতে থাকা বিশেষ নিয়ন পালস বর্ডার */
         .active-attention-glowing {
             border: 4px solid #f59e0b !important;
             box-shadow: 0 0 25px rgba(245, 158, 11, 0.7), inset 0 0 15px rgba(245, 158, 11, 0.2);
@@ -240,7 +236,10 @@
     
     <div class="awareness-sidebar">
         <div class="sidebar-caption">জরুরী নির্দেশনা ও স্বাস্থ্য বার্তা (Patient Notices)</div>
-        <div class="poster-viewport" id="posterSliderContainer"></div>
+        <div class="poster-viewport" id="posterSliderContainer">
+            <!-- মেমোরি বাঁচাতে এখানে এখন শুধুমাত্র একটি একক ইমেজ নোড কাজ করবে -->
+            <img id="singlePosterElement" src="Poster1.png" alt="Poster">
+        </div>
     </div>
 </div>
 
@@ -274,38 +273,27 @@
     setInterval(updateLiveClock, 1000);
     updateLiveClock();
 
-    /* 2. DYNAMIC SLIDESHOW ENGINE */
+    /* 2. LOW-MEMORY TV SLIDESHOW ENGINE */
     const awarenessPostersList = [
-        "Poster1.png", 
-        "Poster2.png", 
-        "Poster3.png",
-        "Poster4.png",
-        "Poster5.png",
-        "Poster6.png",
-        "Poster7.png",
-        "Poster8.png",
-        "Poster9.png"
+        "Poster1.png", "Poster2.png", "Poster3.png",
+        "Poster4.png", "Poster5.png", "Poster6.png",
+        "Poster7.png", "Poster8.png", "Poster9.png"
     ];
     
     function initSlideshowEngine() {
-        const container = document.getElementById('posterSliderContainer');
-        container.innerHTML = '';
-        
-        awarenessPostersList.forEach((src, idx) => {
-            const img = document.createElement('img');
-            img.src = src;
-            if (idx === 0) img.className = 'active';
-            container.appendChild(img);
-        });
-
+        const imgElement = document.getElementById('singlePosterElement');
         let activeIdx = 0;
-        const images = container.getElementsByTagName('img');
         
-        if (images.length > 1) {
-            setInterval(() => {
-                images[activeIdx].classList.remove('active');
-                activeIdx = (activeIdx + 1) % images.length;
-                images[activeIdx].classList.add('active');
+        if (awarenessPostersList.length > 1) {
+            setInterval(function() {
+                activeIdx = (activeIdx + 1) % awarenessPostersList.length;
+                
+                // ওল্ড জিপইউ ক্র্যাশ এড়াতে হালকা স্মুথ ট্রানজিশন লজিক
+                imgElement.style.opacity = 0.2;
+                setTimeout(function() {
+                    imgElement.src = awarenessPostersList[activeIdx];
+                    imgElement.style.opacity = 1;
+                }, 400);
             }, 15000); 
         }
     }
@@ -357,7 +345,6 @@
         gridElement.innerHTML = '';
 
         roomsConfig.forEach(room => {
-            // ফিক্সড: "attention-badge" ডিভ নোডটি সম্পূর্ণ মুছে ফেলা হয়েছে
             const cardHtml = `
                 <div class="room-card" id="rm_${room.id}">
                     <div class="room-title">${room.name}</div>
