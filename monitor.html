@@ -121,7 +121,6 @@
             background: #0f172a;
         }
         
-        /* লো-এন্ড জিপইউ এর জন্য ট্রানজিশন অপ্টিমাইজেশন করা হয়েছে */
         .poster-viewport img {
             position: absolute;
             width: 100%;
@@ -237,13 +236,20 @@
     <div class="awareness-sidebar">
         <div class="sidebar-caption">জরুরী নির্দেশনা ও স্বাস্থ্য বার্তা (Patient Notices)</div>
         <div class="poster-viewport" id="posterSliderContainer">
-            <!-- মেমোরি বাঁচাতে এখানে এখন শুধুমাত্র একটি একক ইমেজ নোড কাজ করবে -->
             <img id="singlePosterElement" src="Poster1.png" alt="Poster">
         </div>
     </div>
 </div>
 
 <script>
+    /* 0. DEBUGGING ENGINE */
+    window.onerror = function(message, source, lineno, colno, error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style = "position:fixed; bottom:0; left:0; background:red; color:white; padding:20px; z-index:9999; font-size:20px; font-family: sans-serif;";
+        errorDiv.innerText = `Error: ${message} at ${lineno}:${colno}`;
+        document.body.appendChild(errorDiv);
+    };
+
     const firebaseConfig = {
         apiKey: "AIzaSyBQUOxDh0o2y-aAxLb78tqogLMmcEOvhTg",
         authDomain: "mediqueue-mahmud.firebaseapp.com",
@@ -254,9 +260,6 @@
         appId: "1:178718052989:web:0157c134bcddedb21fd714",
         measurementId: "G-RTEG14XB87"
     };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
 
     let localState = {};
     let roomsConfig = [];
@@ -287,8 +290,6 @@
         if (awarenessPostersList.length > 1) {
             setInterval(function() {
                 activeIdx = (activeIdx + 1) % awarenessPostersList.length;
-                
-                // ওল্ড জিপইউ ক্র্যাশ এড়াতে হালকা স্মুথ ট্রানজিশন লজিক
                 imgElement.style.opacity = 0.2;
                 setTimeout(function() {
                     imgElement.src = awarenessPostersList[activeIdx];
@@ -339,93 +340,105 @@
         } catch(e) { console.log(e); }
     }
 
-    database.ref('config/rooms').on('value', (configSnapshot) => {
-        roomsConfig = configSnapshot.val() || [];
-        const gridElement = document.getElementById('monitorDisplayGrid');
-        gridElement.innerHTML = '';
+    /* INITIALIZATION WRAPPER */
+    window.addEventListener('load', () => {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
 
-        roomsConfig.forEach(room => {
-            const cardHtml = `
-                <div class="room-card" id="rm_${room.id}">
-                    <div class="room-title">${room.name}</div>
-                    <div class="current-box">
-                        <span class="current-label">এখন ভেতরে (Now Serving):</span>
-                        <span class="current-number" id="d_${room.id}">--</span>
-                    </div>
-                    <div class="queue-container">
-                        <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
-                        <div class="badge-grid" id="q_${room.id}"></div>
-                    </div>
-                </div>
-            `;
-            gridElement.innerHTML += cardHtml;
-        });
+            database.ref('config/rooms').on('value', (configSnapshot) => {
+                roomsConfig = configSnapshot.val() || [];
+                const gridElement = document.getElementById('monitorDisplayGrid');
+                gridElement.innerHTML = '';
 
-        roomsConfig.forEach(r => { if (!localState[r.id]) localState[r.id] = '--'; });
-        applySustainedGlow(); 
-    });
+                roomsConfig.forEach(room => {
+                    const cardHtml = `
+                        <div class="room-card" id="rm_${room.id}">
+                            <div class="room-title">${room.name}</div>
+                            <div class="current-box">
+                                <span class="current-label">এখন ভেতরে (Now Serving):</span>
+                                <span class="current-number" id="d_${room.id}">--</span>
+                            </div>
+                            <div class="queue-container">
+                                <div class="queue-label">পরবর্তী অপেক্ষমাণ সিরিয়ালসমূহ (Upcoming Waiting Serials):</div>
+                                <div class="badge-grid" id="q_${room.id}"></div>
+                            </div>
+                        </div>
+                    `;
+                    gridElement.innerHTML += cardHtml;
+                });
 
-    function applySustainedGlow() {
-        roomsConfig.forEach(room => {
-            const cardElement = document.getElementById('rm_' + room.id);
-            if (cardElement) {
-                if (room.id === latestActiveAttentionRoomId) {
-                    cardElement.classList.add('active-attention-glowing');
-                } else {
-                    cardElement.classList.remove('active-attention-glowing');
-                }
-            }
-        });
-    }
+                roomsConfig.forEach(r => { if (!localState[r.id]) localState[r.id] = '--'; });
+                applySustainedGlow(); 
+            });
 
-    database.ref().on('value', (snapshot) => {
-        const data = snapshot.val() || {};
-        let shouldPlaySound = false;
-        let roomChangedId = null;
-
-        roomsConfig.forEach(room => {
-            const roomData = data[room.id] || {};
-            const currentActive = roomData.current || '--';
-            
-            const displayElement = document.getElementById('d_' + room.id);
-            const cardElement = document.getElementById('rm_' + room.id);
-
-            if (displayElement && localState[room.id] !== currentActive) {
-                displayElement.innerText = currentActive;
-                localState[room.id] = currentActive;
-                shouldPlaySound = true;
-                roomChangedId = room.id; 
-
-                if (cardElement) {
-                    cardElement.classList.add('flash');
-                    setTimeout(() => cardElement.classList.remove('flash'), 1500);
-                }
+            function applySustainedGlow() {
+                roomsConfig.forEach(room => {
+                    const cardElement = document.getElementById('rm_' + room.id);
+                    if (cardElement) {
+                        if (room.id === latestActiveAttentionRoomId) {
+                            cardElement.classList.add('active-attention-glowing');
+                        } else {
+                            cardElement.classList.remove('active-attention-glowing');
+                        }
+                    }
+                });
             }
 
-            const gridElement = document.getElementById('q_' + room.id);
-            if (gridElement) {
-                if (roomData.queue) {
-                    const sortedSerials = Object.keys(roomData.queue).sort((a,b) => parseInt(a)-parseInt(b)).map(k => roomData.queue[k]).filter(v => v !== null);
-                    let badgeHtml = '';
-                    sortedSerials.forEach((serial) => {
-                        badgeHtml += `<div class="token-badge">${serial}</div>`;
-                    });
-                    gridElement.innerHTML = badgeHtml;
-                } else {
-                    gridElement.innerHTML = '<div style="color: #475569; font-size: 2.2vmin; margin-top: 2vmin; font-weight: bold;">নেই / ফাঁকা (None / Empty)</div>';
+            database.ref().on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                let shouldPlaySound = false;
+                let roomChangedId = null;
+
+                roomsConfig.forEach(room => {
+                    const roomData = data[room.id] || {};
+                    const currentActive = roomData.current || '--';
+                    
+                    const displayElement = document.getElementById('d_' + room.id);
+                    const cardElement = document.getElementById('rm_' + room.id);
+
+                    if (displayElement && localState[room.id] !== currentActive) {
+                        displayElement.innerText = currentActive;
+                        localState[room.id] = currentActive;
+                        shouldPlaySound = true;
+                        roomChangedId = room.id; 
+
+                        if (cardElement) {
+                            cardElement.classList.add('flash');
+                            setTimeout(() => cardElement.classList.remove('flash'), 1500);
+                        }
+                    }
+
+                    const gridElement = document.getElementById('q_' + room.id);
+                    if (gridElement) {
+                        if (roomData.queue) {
+                            const sortedSerials = Object.keys(roomData.queue).sort((a,b) => parseInt(a)-parseInt(b)).map(k => roomData.queue[k]).filter(v => v !== null);
+                            let badgeHtml = '';
+                            sortedSerials.forEach((serial) => {
+                                badgeHtml += `<div class="token-badge">${serial}</div>`;
+                            });
+                            gridElement.innerHTML = badgeHtml;
+                        } else {
+                            gridElement.innerHTML = '<div style="color: #475569; font-size: 2.2vmin; margin-top: 2vmin; font-weight: bold;">নেই / ফাঁকা (None / Empty)</div>';
+                        }
+                    }
+                });
+
+                if (roomChangedId) {
+                    latestActiveAttentionRoomId = roomChangedId;
+                    applySustainedGlow();
                 }
-            }
-        });
 
-        if (roomChangedId) {
-            latestActiveAttentionRoomId = roomChangedId;
-            applySustainedGlow();
-        }
-
-        if (shouldPlaySound) {
-            playChime();
+                // Audio now guarded by !isAudioSystemMuted check
+                if (shouldPlaySound && !isAudioSystemMuted) {
+                    playChime();
+                }
+            });
+        } catch (e) {
+            console.error("Initialization Failed:", e);
         }
     });
 </script>
 </body>
 </html>
+
