@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>স্টাফ অ্যাডভান্সড কিউ ম্যানেজার</title>
     <style>
         body { 
@@ -328,6 +331,26 @@
         { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  
     ];
 
+    /* মোবাইল ব্রাউজার ব্যাকগ্রাউন্ড থেকে আবার সামনে এলে রিয়েল-টাইম ডেটা জোরপূর্বক সিঙ্ক করার লজিক */
+    function syncLatestFirebaseState() {
+        database.ref().once('value').then((snapshot) => {
+            if (snapshot.exists()) {
+                globalDataState = snapshot.val() || {};
+                renderActiveRoom();
+            }
+        });
+    }
+
+    document.addEventListener("visibilitychange", function() {
+        if (document.visibilityState === 'visible') {
+            syncLatestFirebaseState();
+        }
+    });
+
+    window.addEventListener('pageshow', function() {
+        syncLatestFirebaseState();
+    });
+
     database.ref('config/rooms').on('value', (snapshot) => {
         const rooms = snapshot.val();
         if (!rooms) {
@@ -566,7 +589,6 @@
                 const selectEl = document.getElementById('roomSelect');
                 const activeRoomName = selectEl.options[selectEl.selectedIndex] ? selectEl.options[selectEl.selectedIndex].text : "এই রুম";
                 
-                // ফিক্সড: "confirm suicide" বাগটি সম্পূর্ণ মুছে স্ট্যান্ডার্ড জাভাস্ক্রিপ্ট "confirm" বসানো হয়েছে
                 const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের দিনের নতুন কাজ শুরুর আগে পুরাতন তালিকাটি সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।\nপুরাতন তালিকাটি রেখে দিতে চাইলে 'Cancel' ক্লিক করুন।`);
                 
                 if (wipeStaleData) {
@@ -608,123 +630,128 @@
         
         if (!rawSerial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
         
-        const normalizedInputInt = parseInt(rawSerial, 10);
-        const serial = String(normalizedInputInt); 
+        // ফায়ারবেস থেকে তাত্ক্ষণিক লেটেস্ট স্ন্যাপশট নিয়ে প্রসেস করার মাধ্যমে রেস-কন্ডিশন সম্পূর্ণ বন্ধ করা হয়েছে
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
 
-        let duplicateFound = false;
-        let duplicateRoomId = null;
-        let duplicateIndexInQueue = -1;
-        let duplicateIsCurrentlyServing = false;
+            const normalizedInputInt = parseInt(rawSerial, 10);
+            const serial = String(normalizedInputInt); 
 
-        globalRoomsConfig.forEach(room => {
-            const rData = globalDataState[room.id] || {};
+            let duplicateFound = false;
+            let duplicateRoomId = null;
+            let duplicateIndexInQueue = -1;
+            let duplicateIsCurrentlyServing = false;
+
+            globalRoomsConfig.forEach(room => {
+                const rData = globalDataState[room.id] || {};
+                
+                if (rData.current && rData.current !== '--' && parseInt(rData.current, 10) === normalizedInputInt) {
+                    duplicateFound = true;
+                    duplicateRoomId = room.id;
+                    duplicateIsCurrentlyServing = true;
+                }
+                
+                const currentQueue = getCleanQueueArray(rData);
+                const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt);
+                if (foundIdx !== -1) {
+                    duplicateFound = true;
+                    duplicateRoomId = room.id;
+                    duplicateIndexInQueue = foundIdx;
+                    duplicateIsCurrentlyServing = false;
+                }
+            });
+
+            if (duplicateFound) {
+                const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId) ? globalRoomsConfig.find(r => r.id === duplicateRoomId).name : "অন্য একটি রুম";
+                const targetRoomName = globalRoomsConfig.find(r => r.id === roomId) ? globalRoomsConfig.find(r => r.id === roomId).name : "বর্তমান রুম";
+
+                let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
+                if (duplicateRoomId === roomId) {
+                    promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
+                } else {
+                    promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
+                }
+
+                const confirmMove = confirm(promptMsg);
+                if (!confirmMove) {
+                    inputField.value = '';
+                    inputField.focus();
+                    return; 
+                }
+
+                let updates = {};
+                const oldRoomData = globalDataState[duplicateRoomId] || {};
+                let oldQueue = getCleanQueueArray(oldRoomData);
+                let oldCurrent = oldRoomData.current || '--';
+                let oldAllEnlisted = getCleanAllEnlistedArray(oldRoomData);
+
+                if (duplicateIsCurrentlyServing) {
+                    oldCurrent = '--';
+                } else if (duplicateIndexInQueue !== -1) {
+                    oldQueue.splice(duplicateIndexInQueue, 1);
+                }
+                oldAllEnlisted = removeFromAllEnlisted(oldAllEnlisted, serial);
+
+                updates[duplicateRoomId] = {
+                    current: oldCurrent,
+                    queue: oldQueue.length > 0 ? oldQueue : null,
+                    allEnlisted: oldAllEnlisted.length > 0 ? oldAllEnlisted : null,
+                    lastResetDate: oldRoomData.lastResetDate || ""
+                };
+
+                let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
+                let currentQueue = getCleanQueueArray(currentRoomData);
+                let currentAllEnlisted = getCleanAllEnlistedArray(currentRoomData);
+
+                currentQueue = currentQueue.filter(item => parseInt(item, 10) !== normalizedInputInt);
+                currentQueue.push(serial);
+                currentQueue.sort((a, b) => parseInt(a) - parseInt(b));
+
+                currentAllEnlisted = removeFromAllEnlisted(currentAllEnlisted, serial);
+                currentAllEnlisted = addToAllEnlistedUnique(currentAllEnlisted, serial);
+
+                updates[roomId] = {
+                    current: currentRoomData.current || '--',
+                    queue: currentQueue,
+                    allEnlisted: currentAllEnlisted,
+                    lastResetDate: currentRoomData.lastResetDate || new Date().toLocaleDateString('en-CA')
+                };
+                updates['authSecret'] = "INMAS-Mitford2026!";
+
+                captureBackupSnapshot(updates); 
+
+                database.ref().update(updates).then(() => {
+                    inputField.value = '';
+                    inputField.focus();
+                });
+                return;
+            }
+
+            let roomData = globalDataState[roomId] || {};
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
             
-            if (rData.current && rData.current !== '--' && parseInt(rData.current, 10) === normalizedInputInt) {
-                duplicateFound = true;
-                duplicateRoomId = room.id;
-                duplicateIsCurrentlyServing = true;
-            }
+            queueArray.push(serial);
+            queueArray.sort((a, b) => parseInt(a) - parseInt(b));
             
-            const currentQueue = getCleanQueueArray(rData);
-            const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt);
-            if (foundIdx !== -1) {
-                duplicateFound = true;
-                duplicateRoomId = room.id;
-                duplicateIndexInQueue = foundIdx;
-                duplicateIsCurrentlyServing = false;
-            }
-        });
-
-        if (duplicateFound) {
-            const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId) ? globalRoomsConfig.find(r => r.id === duplicateRoomId).name : "অন্য একটি রুম";
-            const targetRoomName = globalRoomsConfig.find(r => r.id === roomId) ? globalRoomsConfig.find(r => r.id === roomId).name : "বর্তমান রুম";
-
-            let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
-            if (duplicateRoomId === roomId) {
-                promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
-            } else {
-                promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
-            }
-
-            const confirmMove = confirm(promptMsg);
-            if (!confirmMove) {
-                inputField.value = '';
-                inputField.focus();
-                return; 
-            }
+            allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
 
             let updates = {};
-            const oldRoomData = globalDataState[duplicateRoomId] || {};
-            let oldQueue = getCleanQueueArray(oldRoomData);
-            let oldCurrent = oldRoomData.current || '--';
-            let oldAllEnlisted = getCleanAllEnlistedArray(oldRoomData);
-
-            if (duplicateIsCurrentlyServing) {
-                oldCurrent = '--';
-            } else if (duplicateIndexInQueue !== -1) {
-                oldQueue.splice(duplicateIndexInQueue, 1);
-            }
-            oldAllEnlisted = removeFromAllEnlisted(oldAllEnlisted, serial);
-
-            updates[duplicateRoomId] = {
-                current: oldCurrent,
-                queue: oldQueue.length > 0 ? oldQueue : null,
-                allEnlisted: oldAllEnlisted.length > 0 ? oldAllEnlisted : null,
-                lastResetDate: oldRoomData.lastResetDate || ""
-            };
-
-            let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
-            let currentQueue = getCleanQueueArray(currentRoomData);
-            let currentAllEnlisted = getCleanAllEnlistedArray(currentRoomData);
-
-            currentQueue = currentQueue.filter(item => parseInt(item, 10) !== normalizedInputInt);
-            currentQueue.push(serial);
-            currentQueue.sort((a, b) => parseInt(a) - parseInt(b));
-
-            currentAllEnlisted = removeFromAllEnlisted(currentAllEnlisted, serial);
-            currentAllEnlisted = addToAllEnlistedUnique(currentAllEnlisted, serial);
-
             updates[roomId] = {
-                current: currentRoomData.current || '--',
-                queue: currentQueue,
-                allEnlisted: currentAllEnlisted,
-                lastResetDate: currentRoomData.lastResetDate || new Date().toLocaleDateString('en-CA')
+                current: roomData.current || '--',
+                queue: queueArray,
+                allEnlisted: allEnlistedArray,
+                lastResetDate: roomData.lastResetDate || todayStr
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
-
+            
             captureBackupSnapshot(updates); 
 
             database.ref().update(updates).then(() => {
                 inputField.value = '';
-                inputField.focus();
+                inputField.focus(); 
             });
-            return;
-        }
-
-        let roomData = globalDataState[roomId] || {};
-        const todayStr = new Date().toLocaleDateString('en-CA');
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
-        
-        queueArray.push(serial);
-        queueArray.sort((a, b) => parseInt(a) - parseInt(b));
-        
-        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
-
-        let updates = {};
-        updates[roomId] = {
-            current: roomData.current || '--',
-            queue: queueArray,
-            allEnlisted: allEnlistedArray,
-            lastResetDate: roomData.lastResetDate || todayStr
-        };
-        updates['authSecret'] = "INMAS-Mitford2026!";
-        
-        captureBackupSnapshot(updates); 
-
-        database.ref().update(updates).then(() => {
-            inputField.value = '';
-            inputField.focus(); 
         });
     }
 
@@ -743,137 +770,157 @@
         const targetRoomId = globalRoomsConfig[pickedIdx].id;
         if (targetRoomId === fromRoom) { alert("রোগী ইতিমধ্যেই এই রুমে তালিকাভুক্ত আছেন!"); return; }
 
-        const fromRoomData = globalDataState[fromRoom] || {};
-        let fromQueue = getCleanQueueArray(fromRoomData);
-        let fromAllEnlisted = getCleanAllEnlistedArray(fromRoomData);
-        fromQueue.splice(index, 1);
-        fromAllEnlisted = removeFromAllEnlisted(fromAllEnlisted, serial);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
 
-        const targetRoomData = globalDataState[targetRoomId] || {};
-        let targetQueue = getCleanQueueArray(targetRoomData);
-        let targetAllEnlisted = getCleanAllEnlistedArray(targetRoomData);
-        targetQueue.push(serial);
-        targetQueue.sort((a, b) => parseInt(a) - parseInt(b));
-        targetAllEnlisted = addToAllEnlistedUnique(targetAllEnlisted, serial);
+            const fromRoomData = globalDataState[fromRoom] || {};
+            let fromQueue = getCleanQueueArray(fromRoomData);
+            let fromAllEnlisted = getCleanAllEnlistedArray(fromRoomData);
+            fromQueue.splice(index, 1);
+            fromAllEnlisted = removeFromAllEnlisted(fromAllEnlisted, serial);
 
-        let updates = {};
-        updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, allEnlisted: fromAllEnlisted.length > 0 ? fromAllEnlisted : null, lastResetDate: fromRoomData.lastResetDate || "" };
-        updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, allEnlisted: targetAllEnlisted, lastResetDate: targetRoomData.lastResetDate || "" };
-        updates['authSecret'] = "INMAS-Mitford2026!";
+            const targetRoomData = globalDataState[targetRoomId] || {};
+            let targetQueue = getCleanQueueArray(targetRoomData);
+            let targetAllEnlisted = getCleanAllEnlistedArray(targetRoomData);
+            targetQueue.push(serial);
+            targetQueue.sort((a, b) => parseInt(a) - parseInt(b));
+            targetAllEnlisted = addToAllEnlistedUnique(targetAllEnlisted, serial);
 
-        captureBackupSnapshot(updates); 
+            let updates = {};
+            updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, allEnlisted: fromAllEnlisted.length > 0 ? fromAllEnlisted : null, lastResetDate: fromRoomData.lastResetDate || "" };
+            updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, allEnlisted: targetAllEnlisted, lastResetDate: targetRoomData.lastResetDate || "" };
+            updates['authSecret'] = "INMAS-Mitford2026!";
 
-        database.ref().update(updates);
+            captureBackupSnapshot(updates); 
+
+            database.ref().update(updates);
+        });
     }
 
     function callNextPatient() {
         const roomId = getSelectedRoom();
-        const roomData = globalDataState[roomId] || {};
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
         
-        if (queueArray.length === 0) { alert("এই রুমের ওয়েটিং লিস্ট বর্তমানে খালি!"); return; }
-        
-        const nextSerial = queueArray.shift();
-        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, nextSerial);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+            
+            if (queueArray.length === 0) { alert("এই রুমের ওয়েটিং লিস্ট বর্তমানে খালি!"); return; }
+            
+            const nextSerial = queueArray.shift();
+            allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, nextSerial);
 
-        let updates = {};
-        updates[roomId] = {
-            current: nextSerial,
-            queue: queueArray.length > 0 ? queueArray : null,
-            allEnlisted: allEnlistedArray,
-            lastResetDate: roomData.lastResetDate || new Date().toLocaleDateString('en-CA')
-        };
-        updates['authSecret'] = "INMAS-Mitford2026!";
-        
-        captureBackupSnapshot(updates); 
+            let updates = {};
+            updates[roomId] = {
+                current: nextSerial,
+                queue: queueArray.length > 0 ? queueArray : null,
+                allEnlisted: allEnlistedArray,
+                lastResetDate: roomData.lastResetDate || new Date().toLocaleDateString('en-CA')
+            };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+            
+            captureBackupSnapshot(updates); 
 
-        database.ref().update(updates);
+            database.ref().update(updates);
+        });
     }
 
     function moveOrder(roomId, index, direction) {
-        const roomData = globalDataState[roomId] || {};
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= queueArray.length) return;
+            const targetIndex = direction === 'up' ? index - 1 : index + 1;
+            if (targetIndex < 0 || targetIndex >= queueArray.length) return;
 
-        const temp = queueArray[index];
-        queueArray[index] = queueArray[targetIndex];
-        queueArray[targetIndex] = temp;
+            const temp = queueArray[index];
+            queueArray[index] = queueArray[targetIndex];
+            queueArray[targetIndex] = temp;
 
-        let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
-        updates['authSecret'] = "INMAS-Mitford2026!";
+            let updates = {};
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates['authSecret'] = "INMAS-Mitford2026!";
 
-        captureBackupSnapshot(updates); 
+            captureBackupSnapshot(updates); 
 
-        database.ref().update(updates);
+            database.ref().update(updates);
+        });
     }
 
     function callSpecificPatient(roomId, index, serial) {
         if (!confirm(`জরুরী ডাক (Emergency Override):\nআপনি কি নিশ্চিতভাবে সিরিয়াল নম্বর ${serial}-কে এখনই ভেতরে ডাকতে চান?`)) return;
         
-        const roomData = globalDataState[roomId] || {};
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
-        queueArray.splice(index, 1);
-        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+            queueArray.splice(index, 1);
+            allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
 
-        let updates = {};
-        updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
-        updates['authSecret'] = "INMAS-Mitford2026!";
-        
-        captureBackupSnapshot(updates); 
+            let updates = {};
+            updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+            
+            captureBackupSnapshot(updates); 
 
-        database.ref().update(updates);
+            database.ref().update(updates);
+        });
     }
 
     function editQueueItem(roomId, index, currentSerial) {
         const newSerial = prompt("সিরিয়াল নম্বর পরিবর্তন করুন:", currentSerial);
         if (newSerial === null || newSerial.trim() === "") return;
         
-        const roomData = globalDataState[roomId] || {};
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
-        const oldSerial = queueArray[index];
-        const newSerialClean = newSerial.trim();
-        
-        queueArray[index] = newSerialClean;
-        queueArray.sort((a, b) => parseInt(a) - parseInt(b));
+            const oldSerial = queueArray[index];
+            const newSerialClean = newSerial.trim();
+            
+            queueArray[index] = newSerialClean;
+            queueArray.sort((a, b) => parseInt(a) - parseInt(b));
 
-        allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, oldSerial);
-        allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, newSerialClean);
+            allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, oldSerial);
+            allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, newSerialClean);
 
-        let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
-        updates['authSecret'] = "INMAS-Mitford2026!";
-        
-        captureBackupSnapshot(updates); 
+            let updates = {};
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+            
+            captureBackupSnapshot(updates); 
 
-        database.ref().update(updates);
+            database.ref().update(updates);
+        });
     }
 
     function deleteQueueItem(roomId, index) {
         if (!confirm("আপনি কি নিশ্চিতভাবে এই রোগীকে ওয়েটিং লিস্ট থেকে বাদ দিতে চান?")) return;
         
-        const roomData = globalDataState[roomId] || {};
-        let queueArray = getCleanQueueArray(roomData);
-        let allEnlistedArray = getCleanAllEnlistedArray(roomData);
-        const deletedSerial = queueArray[index];
-        
-        queueArray.splice(index, 1);
-        allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, deletedSerial);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+            const deletedSerial = queueArray[index];
+            
+            queueArray.splice(index, 1);
+            allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, deletedSerial);
 
-        let updates = {};
-        updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null, lastResetDate: roomData.lastResetDate || "" };
-        updates['authSecret'] = "INMAS-Mitford2026!";
-        
-        captureBackupSnapshot(updates); 
+            let updates = {};
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null, lastResetDate: roomData.lastResetDate || "" };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+            
+            captureBackupSnapshot(updates); 
 
-        database.ref().update(updates);
+            database.ref().update(updates);
+        });
     }
 
     function resetActiveRoomOnly() {
