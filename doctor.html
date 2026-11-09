@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>স্টাফ অ্যাডভান্সড কিউ ম্যানেজার</title>
+    <title>স্টাফ অ্যাডভান্সড কিউ ম্যানেজার - আল্ট্রাসনোগ্রাফি ইউনিট</title>
     <style>
         body { 
             font-family: 'Segoe UI', Arial, SolaimanLipi, sans-serif; 
@@ -23,11 +23,11 @@
         
         .card { 
             background: #ffffff; 
-            padding: clamp(15px, 4vmin, 30px); 
+            padding: clamp(15px, 3.5vmin, 28px); 
             border-radius: 16px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
             width: 100%; 
-            max-width: 540px; 
+            max-width: 580px; 
             box-sizing: border-box;
             border: 3px solid #1a73e8; 
             transition: all 0.3s ease;
@@ -37,39 +37,104 @@
             color: #1a73e8; 
             margin: 0 0 1vmin 0; 
             text-align: center; 
-            font-size: clamp(20px, 5vmin, 28px);
+            font-size: clamp(20px, 4.5vmin, 26px);
             transition: color 0.3s ease;
             font-weight: 800;
         }
 
         .date-display {
             text-align: center;
-            font-size: clamp(12px, 2.8vmin, 16px);
+            font-size: clamp(12px, 2.6vmin, 15px);
             color: #334155;
             font-weight: 700;
-            margin-bottom: 2vmin;
+            margin-bottom: 1.5vmin;
             background: rgba(255, 255, 255, 0.6);
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             border: 1px solid rgba(0, 0, 0, 0.08);
             box-sizing: border-box;
         }
-        
+
+        /* ফিচার ৫: সব রুমের লাইভ কুইক স্ট্রিপ */
+        .cross-room-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 2vmin;
+            scrollbar-width: thin;
+        }
+        .cross-room-pill {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: clamp(11px, 2.2vmin, 13px);
+            font-weight: bold;
+            color: #334155;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        .cross-room-pill.active {
+            border-color: #1a73e8;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        /* ফিচার ৩: কুইক সিরিয়াল সার্চ বার */
+        .search-container {
+            position: relative;
+            margin-bottom: 2vmin;
+        }
+        .search-input {
+            width: 100%;
+            padding: 9px 14px 9px 36px !important;
+            font-size: clamp(13px, 2.6vmin, 15px) !important;
+            border: 2px solid #94a3b8 !important;
+            border-radius: 8px;
+            margin: 0 !important;
+            box-sizing: border-box;
+        }
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #64748b;
+        }
+        .search-result-box {
+            display: none;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 6px;
+            font-size: clamp(12px, 2.4vmin, 14px);
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
         label { 
             font-weight: bold; 
             color: #1e293b; 
-            font-size: clamp(11px, 2.5vmin, 15px);
+            font-size: clamp(11px, 2.4vmin, 14px);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
         select, input[type="number"], input[type="text"] { 
             width: 100%; 
-            padding: clamp(10px, 2.5vmin, 15px); 
-            font-size: clamp(16px, 3.5vmin, 22px); 
+            padding: clamp(10px, 2.5vmin, 14px); 
+            font-size: clamp(15px, 3.2vmin, 20px); 
             border: 2px solid #cbd5e1; 
             border-radius: 8px; 
-            margin: 1vmin 0 2.5vmin 0; 
+            margin: 1vmin 0 2vmin 0; 
             box-sizing: border-box; 
             background-color: #ffffff !important;
             color: #0f172a;
@@ -84,8 +149,8 @@
         
         .main-call-btn { 
             width: 100%; 
-            padding: clamp(14px, 3.5vmin, 20px); 
-            font-size: clamp(16px, 3.8vmin, 22px); 
+            padding: clamp(14px, 3.5vmin, 18px); 
+            font-size: clamp(16px, 3.6vmin, 21px); 
             font-weight: bold; 
             color: white; 
             background: #16a34a; 
@@ -99,34 +164,32 @@
 
         .undo-btn {
             width: 100%;
-            padding: clamp(12px, 2.5vmin, 16px);
-            font-size: clamp(13px, 2.8vmin, 16px);
+            padding: clamp(10px, 2.2vmin, 14px);
+            font-size: clamp(12px, 2.6vmin, 15px);
             font-weight: bold;
             color: #991b1b;
             background: #fee2e2;
             border: 2px solid #f87171;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 2.5vmin;
-            box-shadow: 0 3px 8px rgba(239, 68, 68, 0.15);
-            transition: all 0.2s ease;
+            margin-bottom: 2vmin;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);
             display: none; 
             text-align: center;
-            line-height: 1.4;
         }
-        .undo-btn:hover { background: #fecaca; border-color: #ef4444; }
+        .undo-btn:hover { background: #fecaca; }
         
         .add-btn { 
             background: #1a73e8; 
             color: white; 
             border: none; 
-            padding: clamp(10px, 2.8vmin, 15px); 
-            font-size: clamp(14px, 3.2vmin, 18px); 
+            padding: clamp(10px, 2.6vmin, 14px); 
+            font-size: clamp(14px, 3vmin, 17px); 
             font-weight: bold; 
             border-radius: 8px; 
             cursor: pointer; 
             width: 100%; 
-            margin-bottom: 2.5vmin; 
+            margin-bottom: 2vmin; 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         
@@ -135,71 +198,94 @@
             background: rgba(255, 255, 255, 0.7); 
             border-radius: 12px; 
             border: 2px solid rgba(0, 0, 0, 0.05); 
-            margin-bottom: 2.5vmin; 
+            margin-bottom: 2vmin; 
             text-align: center; 
         }
         .current-number { 
-            font-size: clamp(34px, 7.5vmin, 54px); 
+            font-size: clamp(34px, 7vmin, 52px); 
             font-weight: 900; 
             color: #dc2626; 
-            margin: 0.5vmin 0; 
+            margin: 0.4vmin 0; 
             text-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .stats-grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: clamp(8px, 2vmin, 14px);
-            margin-top: 1.5vmin;
+            gap: clamp(8px, 1.8vmin, 12px);
+            margin-top: 1.2vmin;
             width: 100%;
         }
         .stat-badge {
             background: #ffffff;
             border-radius: 10px;
-            padding: clamp(10px, 2vmin, 16px);
+            padding: clamp(8px, 1.8vmin, 14px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             border: 2px solid #e2e8f0;
         }
-        .stat-badge.completed-badge {
-            border-color: #16a34a;
-            background: #f0fdf4;
-        }
-        .stat-badge.total-badge {
-            border-color: #2563eb;
-            background: #eff6ff;
-        }
-        .stat-badge-title {
-            font-size: clamp(12px, 2.5vmin, 15px);
-            font-weight: 800;
-            margin-bottom: 4px;
-            text-align: center;
-        }
+        .stat-badge.completed-badge { border-color: #16a34a; background: #f0fdf4; }
+        .stat-badge.total-badge { border-color: #2563eb; background: #eff6ff; }
+        .stat-badge-title { font-size: clamp(11px, 2.3vmin, 14px); font-weight: 800; margin-bottom: 2px; }
         .stat-badge.completed-badge .stat-badge-title { color: #166534; }
         .stat-badge.total-badge .stat-badge-title { color: #1e40af; }
-        
-        .stat-badge-value {
-            font-size: clamp(28px, 6vmin, 40px);
-            font-weight: 900;
-            line-height: 1.1;
-            font-family: Arial, sans-serif;
-        }
+        .stat-badge-value { font-size: clamp(26px, 5.5vmin, 38px); font-weight: 900; line-height: 1.1; font-family: Arial, sans-serif; }
         .stat-badge.completed-badge .stat-badge-value { color: #15803d; }
         .stat-badge.total-badge .stat-badge-value { color: #1d4ed8; }
-        
-        .stat-badge-unit {
-            font-size: clamp(11px, 2vmin, 13px);
-            font-weight: 700;
-            color: #64748b;
-            margin-top: 2px;
-        }
+        .stat-badge-unit { font-size: clamp(10px, 1.8vmin, 12px); font-weight: 700; color: #64748b; }
         
         .queue-section { 
             border-top: 2px dashed rgba(0, 0, 0, 0.1); 
-            padding-top: 2.5vmin; 
+            padding-top: 2vmin; 
+        }
+
+        /* ফিচার ১: অন-হোল্ড (প্রস্তুতি) শেলফ স্টাইলিং */
+        .hold-shelf-section {
+            background: #fffbeb;
+            border: 2px dashed #f59e0b;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 2vmin;
+            display: none;
+        }
+        .hold-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: #b45309;
+            font-size: clamp(12px, 2.5vmin, 15px);
+            margin-bottom: 8px;
+        }
+        .hold-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .hold-chip {
+            background: #ffffff;
+            border: 1px solid #f59e0b;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #78350f;
+        }
+        .hold-chip button {
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
         }
         
         .queue-list { 
@@ -211,13 +297,13 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            padding: clamp(8px, 2vmin, 14px); 
+            padding: clamp(8px, 1.8vmin, 12px); 
             background: #ffffff; 
             margin-bottom: 1vmin; 
             border-radius: 8px; 
             border: 1px solid #e2e8f0; 
             flex-wrap: wrap; 
-            gap: 1.5vmin; 
+            gap: 1.2vmin; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             transition: all 0.3s ease;
         }
@@ -225,11 +311,11 @@
         .item-just-moved {
             border-color: #f59e0b !important;
             background-color: #fef3c7 !important;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.45) !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.45) !important;
         }
 
         .queue-item span { 
-            font-size: clamp(15px, 3.4vmin, 20px); 
+            font-size: clamp(15px, 3.2vmin, 19px); 
             font-weight: bold; 
             color: #1e293b; 
             min-width: max-content; 
@@ -237,12 +323,12 @@
         
         .action-btns { 
             display: flex; 
-            gap: 0.8vmin; 
+            gap: 0.6vmin; 
             flex-wrap: wrap; 
         }
         .action-btns button { 
-            padding: clamp(6px, 1.8vmin, 10px) clamp(8px, 2vmin, 12px); 
-            font-size: clamp(11px, 2.5vmin, 14px); 
+            padding: clamp(5px, 1.5vmin, 8px) clamp(7px, 1.8vmin, 10px); 
+            font-size: clamp(11px, 2.3vmin, 13px); 
             font-weight: bold; 
             border: none; 
             border-radius: 4px; 
@@ -251,9 +337,10 @@
         }
         
         .now-btn { background: #dc2626; } 
-        .edit-btn { background: #d97706; }
+        .hold-btn { background: #d97706; }
+        .edit-btn { background: #0284c7; }
         .del-btn { background: #4b5563; }
-        .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
+        .order-btn { background: #475569; font-size: 13px !important; } 
         .move-btn { background: #7c3aed; }
 
         .config-toggle-btn {
@@ -265,44 +352,57 @@
             border-radius: 6px;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 3vmin;
+            margin-bottom: 2vmin;
             font-size: 13px;
         }
         .config-panel {
             background: #ffffff;
             border: 2px solid #cbd5e1;
             border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 3vmin;
+            padding: 12px;
+            margin-bottom: 2vmin;
             display: none;
         }
-        .config-room-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .config-room-row input[type="text"] { margin: 0; padding: 8px; font-size: 14px; }
-        .config-del-btn { background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .config-add-btn { background: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
-        .config-save-btn { background: #16a34a; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 15px; }
+        .config-room-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .config-room-row input[type="text"] { margin: 0; padding: 6px; font-size: 13px; }
+        .config-del-btn { background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .config-add-btn { background: #0284c7; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; }
+        .config-save-btn { background: #16a34a; color: white; border: none; padding: 9px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 8px; font-size: 14px; }
 
-        .reset-section { 
+        .bottom-action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 2.5vmin;
             border-top: 2px solid rgba(0, 0, 0, 0.1); 
-            margin-top: 3.5vmin; 
-            padding-top: 2.5vmin; 
-            text-align: center; 
+            padding-top: 2vmin;
+        }
+        .report-btn {
+            background: #0d9488;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: clamp(11px, 2.3vmin, 13px);
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
         }
         .reset-btn { 
             background: #334155; 
             color: white; 
             border: none; 
-            padding: clamp(10px, 2.5vmin, 14px) 20px; 
-            font-size: clamp(12px, 2.8vmin, 15px); 
+            padding: 10px; 
+            font-size: clamp(11px, 2.3vmin, 13px); 
             font-weight: bold; 
             border-radius: 6px; 
             cursor: pointer; 
-            width: 100%; 
+        }
+
+        .helper-text {
+            font-size: 11px;
+            color: #64748b;
+            margin: -1.2vmin 0 1.8vmin 0;
+            display: block;
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -315,14 +415,24 @@
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট</button>
+    <!-- ফিচার ৫: ক্রস-রুম কুইক স্ট্রিপ -->
+    <div class="cross-room-strip" id="crossRoomQuickBar"></div>
+
+    <!-- ফিচার ৩: কুইক সিরিয়াল সার্চ বার -->
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="quickSearchInput" placeholder="রোগীর সিরিয়াল ট্র্যাক বা সন্ধান করুন (যেমন: 25)..." oninput="executeInstantPatientSearch()">
+        <div class="search-result-box" id="quickSearchResult"></div>
+    </div>
+
+    <button class="config-toggle-btn" onclick="toggleConfigPanel()">⚙️ রুম ম্যানেজমেন্ট ও কনফিগারেশন</button>
     <div class="config-panel" id="configPanel">
         <div id="configRoomsContainer"></div>
         <button class="config-add-btn" onclick="addRoomToConfig()">➕ নতুন রুম যুক্ত করুন</button>
         <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
-    <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
+    <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
     <select id="roomSelect" onchange="applyDynamicRoomTheme(); updateResetButtonLabel(); renderActiveRoom();">
     </select>
 
@@ -344,22 +454,35 @@
         </div>
     </div>
 
-    <button class="main-call-btn" id="mainCallButton" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
+    <button class="main-call-btn" id="mainCallButton" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন [Alt+C]</button>
     
     <button class="undo-btn" id="undoActionButton" onclick="triggerUndoLastAction()"></button>
 
+    <!-- ফিচার ১: পানি খাওয়ার জন্য হোল্ড শেলফ -->
+    <div class="hold-shelf-section" id="holdShelfContainer">
+        <div class="hold-header">
+            <span>⏸️ ব্লাডার প্রস্তুত করছেন (On-Hold)</span>
+            <span id="holdCountBadge" style="font-size:12px; background:#fde68a; padding:2px 8px; border-radius:12px;">০ জন</span>
+        </div>
+        <div class="hold-list" id="holdListDisplay"></div>
+    </div>
+
     <div class="queue-section">
-        <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
-        <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
+        <label for="newPatientSerial">নতুন রোগী যুক্ত করুন (একক বা একগুচ্ছ):</label>
+        <!-- ফিচার ২: ব্যাচ এন্ট্রি ইনপুট -->
+        <input type="text" id="newPatientSerial" placeholder="যেমন: 25 অথবা 26, 27, 28 অথবা 30-35" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
+        <span class="helper-text">💡 টিপ: একাধিক সিরিয়াল কমা (,) দিয়ে অথবা রেঞ্জ হিসেবে (যেমন: 15-20) একসাথে লিখতে পারেন।</span>
+        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
     <ul class="queue-list" id="queueListDisplay">
     </ul>
 
-    <div class="reset-section">
-        <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট করুন</button>
+    <!-- ফিচার ৭: শিফট রিপোর্ট এবং রুম রিসেট গ্রিড -->
+    <div class="bottom-action-grid">
+        <button class="report-btn" onclick="exportDailyShiftReport()">📋 শিফট রিপোর্ট কপি</button>
+        <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট</button>
     </div>
 </div>
 
@@ -395,19 +518,41 @@
         { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  
     ];
 
+    /* ফিচার ৬: মোবাইল হ্যাপটিক ফিডব্যাক */
+    function triggerHaptic(duration = 40) {
+        if (navigator && navigator.vibrate) {
+            try { navigator.vibrate(duration); } catch(e) {}
+        }
+    }
+
+    /* ফিচার ৪: কিবোর্ড শর্টকাট লিসেনার */
+    window.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+            e.preventDefault();
+            triggerUndoLastAction();
+        }
+        if (e.altKey && (e.key === 'c' || e.key === 'C')) {
+            e.preventDefault();
+            callNextPatient();
+        }
+        if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+            e.preventDefault();
+            document.getElementById('newPatientSerial').focus();
+        }
+    });
+
     function syncLatestFirebaseState() {
         database.ref().once('value').then((snapshot) => {
             if (snapshot.exists()) {
                 globalDataState = snapshot.val() || {};
                 renderActiveRoom();
+                renderCrossRoomStrip();
             }
         });
     }
 
     document.addEventListener("visibilitychange", function() {
-        if (document.visibilityState === 'visible') {
-            syncLatestFirebaseState();
-        }
+        if (document.visibilityState === 'visible') syncLatestFirebaseState();
     });
 
     window.addEventListener('pageshow', function() {
@@ -431,11 +576,13 @@
         populateRoomDropdown();
         applyDynamicRoomTheme();
         renderActiveRoom();
+        renderCrossRoomStrip();
     });
 
     database.ref().on('value', (snapshot) => {
         globalDataState = snapshot.val() || {};
         renderActiveRoom();
+        renderCrossRoomStrip();
     });
 
     function initializeDateBanner() {
@@ -492,21 +639,96 @@
     function updateResetButtonLabel() {
         const select = document.getElementById('roomSelect');
         const activeRoomName = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : "নির্বাচিত রুম";
-        document.getElementById('resetRoomBtn').innerText = `🧹 ${activeRoomName}-এর সমস্ত ডেটা রিসেট করুন`;
+        document.getElementById('resetRoomBtn').innerText = `🧹 ${activeRoomName} রিসেট`;
+    }
+
+    /* ফিচার ৫: লাইভ ক্রস-রুম স্ট্রিপ রেন্ডারার */
+    function renderCrossRoomStrip() {
+        const stripContainer = document.getElementById('crossRoomQuickBar');
+        if (!stripContainer) return;
+        stripContainer.innerHTML = '';
+        const currentRoomId = getSelectedRoom();
+
+        globalRoomsConfig.forEach(room => {
+            const rData = globalDataState[room.id] || {};
+            const cur = rData.current || '--';
+            const qArr = getCleanQueueArray(rData);
+            
+            const pill = document.createElement('div');
+            pill.className = `cross-room-pill ${room.id === currentRoomId ? 'active' : ''}`;
+            pill.innerHTML = `<strong>${room.name}:</strong> #${cur} <span style="opacity:0.75; font-size:0.9em;">(${qArr.length})</span>`;
+            pill.onclick = () => {
+                triggerHaptic(20);
+                document.getElementById('roomSelect').value = room.id;
+                applyDynamicRoomTheme();
+                updateResetButtonLabel();
+                renderActiveRoom();
+                renderCrossRoomStrip();
+            };
+            stripContainer.appendChild(pill);
+        });
+    }
+
+    /* ফিচার ৩: রিয়েল-টাইম সিরিয়াল ট্র্যাকিং ও সন্ধান */
+    function executeInstantPatientSearch() {
+        const query = document.getElementById('quickSearchInput').value.trim();
+        const resultBox = document.getElementById('quickSearchResult');
+        if (!query) {
+            resultBox.style.display = 'none';
+            return;
+        }
+
+        const normalizedQ = parseInt(query, 10);
+        if (isNaN(normalizedQ)) {
+            resultBox.style.display = 'block';
+            resultBox.innerHTML = 'দয়া করে সংখ্যায় সিরিয়াল নম্বর লিখুন।';
+            return;
+        }
+
+        let findings = [];
+        globalRoomsConfig.forEach(room => {
+            const rData = globalDataState[room.id] || {};
+            const cur = rData.current || '--';
+            const queueArr = getCleanQueueArray(rData);
+            const holdArr = getCleanHoldArray(rData);
+            const allEnlisted = getCleanAllEnlistedArray(rData);
+
+            if (cur !== '--' && parseInt(cur, 10) === normalizedQ) {
+                findings.push(`📍 <strong>${room.name}</strong>-এর ভেতরে বর্তমানে অবস্থান করছেন!`);
+            }
+
+            const qIndex = queueArr.findIndex(s => parseInt(s, 10) === normalizedQ);
+            if (qIndex !== -1) {
+                findings.push(`⏳ <strong>${room.name}</strong>-এর অপেক্ষমাণ তালিকায় আছেন (অবস্থান: ${qIndex + 1} নম্বর)।`);
+            }
+
+            const hIndex = holdArr.findIndex(s => parseInt(s, 10) === normalizedQ);
+            if (hIndex !== -1) {
+                findings.push(`⏸️ <strong>${room.name}</strong>-এ পানি খেয়ে প্রস্তুতি নিচ্ছেন (On-Hold)।`);
+            }
+
+            const inAll = allEnlisted.some(s => parseInt(s, 10) === normalizedQ);
+            if (inAll && qIndex === -1 && hIndex === -1 && (cur === '--' || parseInt(cur, 10) !== normalizedQ)) {
+                findings.push(`✅ <strong>${room.name}</strong>-এ এই রোগীর পরীক্ষা ইতিমধ্যে সম্পন্ন হয়েছে।`);
+            }
+        });
+
+        resultBox.style.display = 'block';
+        if (findings.length > 0) {
+            resultBox.innerHTML = `<strong>সিরিয়াল ${normalizedQ}-এর ফলাফল:</strong><br>` + findings.join('<br>');
+        } else {
+            resultBox.innerHTML = `সিরিয়াল ${normalizedQ}-কে কোনো রুমে পাওয়া যায়নি।`;
+        }
     }
 
     function sortLocalConfigStateAlphabetically() {
-        localConfigState.sort((a, b) => {
-            return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
-        });
+        localConfigState.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
     }
 
     function toggleConfigPanel() {
         const panel = document.getElementById('configPanel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
         if (panel.style.display === 'block') {
-            panel.style.display = 'none';
-        } else {
-            panel.style.display = 'block';
             sortLocalConfigStateAlphabetically(); 
             buildConfigPanelUI();
         }
@@ -519,28 +741,17 @@
             const row = document.createElement('div');
             row.className = 'config-room-row';
             row.innerHTML = `
-                <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="রুমের নাম (যেমন: রুম ১ বা এক্স-রে)">
+                <input type="text" value="${room.name}" oninput="updateLocalRoomName(${index}, this.value)" placeholder="রুমের নাম">
                 <input type="button" class="config-del-btn" value="✕" onclick="removeRoomFromConfig(${index})">
             `;
             container.appendChild(row);
         });
     }
 
-    function updateLocalRoomName(index, value) {
-        localConfigState[index].name = value; 
-    }
-
-    function removeRoomFromConfig(index) {
-        localConfigState.splice(index, 1);
-        buildConfigPanelUI();
-    }
-
+    function updateLocalRoomName(index, value) { localConfigState[index].name = value; }
+    function removeRoomFromConfig(index) { localConfigState.splice(index, 1); buildConfigPanelUI(); }
     function addRoomToConfig() {
-        const nextIdNum = localConfigState.length + 1;
-        localConfigState.push({
-            id: "room" + Date.now(), 
-            name: `রুম ${nextIdNum}` 
-        });
+        localConfigState.push({ id: "room" + Date.now(), name: `রুম ${localConfigState.length + 1}` });
         sortLocalConfigStateAlphabetically(); 
         buildConfigPanelUI();
     }
@@ -549,7 +760,7 @@
         if (localConfigState.length === 0) { alert("আপনাকে অন্তত একটি রুম সক্রিয় রাখতে হবে!"); return; }
         sortLocalConfigStateAlphabetically(); 
         database.ref('config/rooms').set(localConfigState).then(() => {
-            alert("রুম কনফিগারেশন সফলভাবে পুরো সিস্টেমে সিঙ্ক হয়েছে!");
+            alert("রুম কনফিগারেশন সিঙ্ক হয়েছে!");
             document.getElementById('configPanel').style.display = 'none';
         });
     }
@@ -562,19 +773,24 @@
                      .filter(val => val !== null && val !== undefined);
     }
 
+    function getCleanHoldArray(roomData) {
+        if (!roomData || !roomData.hold) return [];
+        return Object.keys(roomData.hold)
+                     .sort((a, b) => parseInt(a) - parseInt(b))
+                     .map(key => roomData.hold[key])
+                     .filter(val => val !== null && val !== undefined);
+    }
+
     function getCleanAllEnlistedArray(roomData) {
         if (!roomData || !roomData.allEnlisted) return [];
         return Object.keys(roomData.allEnlisted)
-                     .map(function(key) { return roomData.allEnlisted[key]; })
-                     .filter(function(val) { return val !== null && val !== undefined; });
+                     .map(key => roomData.allEnlisted[key])
+                     .filter(val => val !== null && val !== undefined);
     }
 
     function addToAllEnlistedUnique(allEnlistedArray, serial) {
         const serialInt = parseInt(serial, 10);
-        const exists = allEnlistedArray.some(function(item) {
-            return parseInt(item, 10) === serialInt;
-        });
-        if (!exists) {
+        if (!allEnlistedArray.some(item => parseInt(item, 10) === serialInt)) {
             allEnlistedArray.push(serial);
         }
         return allEnlistedArray;
@@ -582,9 +798,7 @@
 
     function removeFromAllEnlisted(allEnlistedArray, serial) {
         const serialInt = parseInt(serial, 10);
-        return allEnlistedArray.filter(function(item) {
-            return parseInt(item, 10) !== serialInt;
-        });
+        return allEnlistedArray.filter(item => parseInt(item, 10) !== serialInt);
     }
 
     function pushUndoSnapshot(actionLabel, updates) {
@@ -593,17 +807,8 @@
             if (key === 'authSecret') continue;
             backup[key] = globalDataState[key] ? JSON.parse(JSON.stringify(globalDataState[key])) : null;
         }
-        
-        undoHistoryStack.push({
-            label: actionLabel,
-            backupPayload: backup,
-            timestamp: Date.now()
-        });
-
-        if (undoHistoryStack.length > MAX_UNDO_DEPTH) {
-            undoHistoryStack.shift();
-        }
-
+        undoHistoryStack.push({ label: actionLabel, backupPayload: backup });
+        if (undoHistoryStack.length > MAX_UNDO_DEPTH) undoHistoryStack.shift();
         updateUndoButtonUI();
     }
 
@@ -614,13 +819,13 @@
         } else {
             const nextUndo = undoHistoryStack[undoHistoryStack.length - 1];
             undoBtn.style.display = 'block';
-            undoBtn.innerHTML = `↩️ পূর্বাবস্থায় যান: <strong>${nextUndo.label}</strong> <span style="font-size:0.65em; opacity:0.55;">(${undoHistoryStack.length}টি সর্বশেষ কাজ বাতিলযোগ্য)</span>`;
+            undoBtn.innerHTML = `↩️ বাতিল (Undo): <strong>${nextUndo.label}</strong> <span style="font-size:0.75em; opacity:0.75;">(${undoHistoryStack.length}টি সংরক্ষিত)</span>`;
         }
     }
 
     function triggerUndoLastAction() {
         if (undoHistoryStack.length === 0) return;
-        
+        triggerHaptic(50);
         const lastAction = undoHistoryStack.pop();
         let updates = JSON.parse(JSON.stringify(lastAction.backupPayload));
         updates['authSecret'] = "INMAS-Mitford2026!";
@@ -641,6 +846,7 @@
         queueListDisplay.innerHTML = '';
         
         const queueArray = getCleanQueueArray(roomData);
+        const holdArray = getCleanHoldArray(roomData);
         const allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
         const totalEnlisted = allEnlistedArray.length;
@@ -650,30 +856,45 @@
         allEnlistedArray.forEach(function(serial) {
             const serialInt = parseInt(serial, 10);
             const isCurrent = (currentPatient !== '--' && parseInt(currentPatient, 10) === serialInt);
-            const isInQueue = queueArray.some(function(qItem) { return parseInt(qItem, 10) === serialInt; });
-            if (!isCurrent && !isInQueue) {
-                examined++;
-            }
+            const isInQueue = queueArray.some(qItem => parseInt(qItem, 10) === serialInt);
+            const isInHold = holdArray.some(hItem => parseInt(hItem, 10) === serialInt);
+            if (!isCurrent && !isInQueue && !isInHold) examined++;
         });
         
         document.getElementById('statsExaminedVal').innerText = examined;
         document.getElementById('statsTotalVal').innerText = totalEnlisted;
 
+        /* অন-হোল্ড শেলফ রেন্ডারিং */
+        const holdContainer = document.getElementById('holdShelfContainer');
+        const holdList = document.getElementById('holdListDisplay');
+        if (holdArray.length > 0) {
+            holdContainer.style.display = 'block';
+            document.getElementById('holdCountBadge').innerText = `${holdArray.length} জন`;
+            holdList.innerHTML = '';
+            holdArray.forEach((serial, hIdx) => {
+                const chip = document.createElement('div');
+                chip.className = 'hold-chip';
+                chip.innerHTML = `
+                    <span>#${serial}</span>
+                    <button onclick="restoreFromHold('${roomId}', ${hIdx}, '${serial}')" title="প্রস্তুতি শেষে লাইনে ফেরত পাঠান">▶️ তৈরি</button>
+                    <button style="background:#ef4444;" onclick="deleteHoldItem('${roomId}', ${hIdx}, '${serial}')" title="বাতিল করুন">✕</button>
+                `;
+                holdList.appendChild(chip);
+            });
+        } else {
+            holdContainer.style.display = 'none';
+        }
+
         const todayStr = new Date().toLocaleDateString('en-CA');
         const lastReset = roomData.lastResetDate || "";
 
-        if (lastReset !== todayStr && !localWarnedState[roomId] && ((roomData.current && roomData.current !== '--') || queueArray.length > 0)) {
+        if (lastReset !== todayStr && !localWarnedState[roomId] && ((roomData.current && roomData.current !== '--') || queueArray.length > 0 || holdArray.length > 0)) {
             localWarnedState[roomId] = true; 
-            
             setTimeout(() => {
                 const selectEl = document.getElementById('roomSelect');
                 const activeRoomName = selectEl.options[selectEl.selectedIndex] ? selectEl.options[selectEl.selectedIndex].text : "এই রুম";
-                
-                const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের দিনের নতুন কাজ শুরুর আগে পুরাতন তালিকাটি সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।\nপুরাতন তালিকাটি রেখে দিতে চাইলে 'Cancel' ক্লিক করুন।`);
-                
-                if (wipeStaleData) {
-                    executeRoomResetPayload(roomId);
-                }
+                const wipeStaleData = confirm(`🌞 শুভ সকাল নোটিশ:\n"${activeRoomName}"-এ আগের শিফটের রোগীর তালিকা রয়ে গেছে!\n\nআজকের নতুন শিফটের শুরুতে পুরাতন তালিকা সম্পূর্ণ মুছে ফেলতে 'OK' ক্লিক করুন।`);
+                if (wipeStaleData) executeRoomResetPayload(roomId);
             }, 400);
         }
 
@@ -694,10 +915,11 @@
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
-                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ স্থানান্তর</button>
-                        <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ এখনই ডাকুন</button>
-                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">সম্পাদনা</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">মুছে ফেলুন</button>
+                        <button class="hold-btn" onclick="putOnHold('${roomId}', ${index}, '${serial}')" title="পানি খেয়ে ব্লাডার পূর্ণ করার জন্য হোল্ডে রাখুন">⏸️ হোল্ড</button>
+                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ বদল</button>
+                        <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ ডাকুন</button>
+                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">এডিট</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">মুছুন</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
@@ -707,129 +929,80 @@
         }
     }
 
+    /* ফিচার ২: ব্যাচ সিরিয়াল পার্সিং মেকানিজম */
+    function parseSerialInput(inputStr) {
+        const tokens = inputStr.split(/[\s,]+/);
+        let extracted = [];
+        for (let token of tokens) {
+            token = token.trim();
+            if (!token) continue;
+            if (token.includes('-')) {
+                const parts = token.split('-');
+                if (parts.length === 2) {
+                    const start = parseInt(parts[0], 10);
+                    const end = parseInt(parts[1], 10);
+                    if (!isNaN(start) && !isNaN(end) && start > 0 && end > 0 && start <= end && (end - start) <= 100) {
+                        for (let i = start; i <= end; i++) extracted.push(String(i));
+                        continue;
+                    }
+                }
+            }
+            const num = parseInt(token, 10);
+            if (!isNaN(num) && num > 0) extracted.push(String(num));
+        }
+        return [...new Set(extracted)];
+    }
+
     function addPatientToQueue() {
+        triggerHaptic(30);
         const roomId = getSelectedRoom();
         const inputField = document.getElementById('newPatientSerial');
-        const rawSerial = inputField.value.trim();
+        const rawInput = inputField.value.trim();
         
-        if (!rawSerial) { alert("দয়া করে একটি সঠিক সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
+        if (!rawInput) { alert("দয়া করে অন্তত একটি সিরিয়াল নম্বর লিখুন!"); inputField.focus(); return; }
         
+        const serialsToAdd = parseSerialInput(rawInput);
+        if (serialsToAdd.length === 0) { alert("সঠিক সংখ্যা বা রেঞ্জ লিখুন (যেমন: 25 বা 20-25)!"); return; }
+
         database.ref().once('value').then((snapshot) => {
             globalDataState = snapshot.val() || {};
-
-            const normalizedInputInt = parseInt(rawSerial, 10);
-            const serial = String(normalizedInputInt); 
-
-            let duplicateFound = false;
-            let duplicateRoomId = null;
-            let duplicateIndexInQueue = -1;
-            let duplicateIsCurrentlyServing = false;
-
-            globalRoomsConfig.forEach(room => {
-                const rData = globalDataState[room.id] || {};
-                
-                if (rData.current && rData.current !== '--' && parseInt(rData.current, 10) === normalizedInputInt) {
-                    duplicateFound = true;
-                    duplicateRoomId = room.id;
-                    duplicateIsCurrentlyServing = true;
-                }
-                
-                const currentQueue = getCleanQueueArray(rData);
-                const foundIdx = currentQueue.findIndex(item => parseInt(item, 10) === normalizedInputInt);
-                if (foundIdx !== -1) {
-                    duplicateFound = true;
-                    duplicateRoomId = room.id;
-                    duplicateIndexInQueue = foundIdx;
-                    duplicateIsCurrentlyServing = false;
-                }
-            });
-
-            if (duplicateFound) {
-                const oldRoomName = globalRoomsConfig.find(r => r.id === duplicateRoomId) ? globalRoomsConfig.find(r => r.id === duplicateRoomId).name : "অন্য একটি রুম";
-                const targetRoomName = globalRoomsConfig.find(r => r.id === roomId) ? globalRoomsConfig.find(r => r.id === roomId).name : "বর্তমান রুম";
-
-                let promptMsg = `⚠️ ডুপ্লিকেট সিরিয়াল নোটিশ:\nসিরিয়াল নম্বর ${serial} ইতিমধ্যেই "${oldRoomName}"-এ যুক্ত আছে।\n\n`;
-                if (duplicateRoomId === roomId) {
-                    promptMsg += `আপনি কি এই সিরিয়ালটি বর্তমান রুমের তালিকায় বহাল রাখতে চান? (Cancel দিলে নতুন করে এন্ট্রি হবে না)`;
-                } else {
-                    promptMsg += `আপনি কি এটিকে "${oldRoomName}" থেকে সম্পূর্ণ কেটে বা সরিয়ে এই "${targetRoomName}"-এ নিয়ে আসতে চান?`;
-                }
-
-                const confirmMove = confirm(promptMsg);
-                if (!confirmMove) {
-                    inputField.value = '';
-                    inputField.focus();
-                    return; 
-                }
-
-                let updates = {};
-                const oldRoomData = globalDataState[duplicateRoomId] || {};
-                let oldQueue = getCleanQueueArray(oldRoomData);
-                let oldCurrent = oldRoomData.current || '--';
-                let oldAllEnlisted = getCleanAllEnlistedArray(oldRoomData);
-
-                if (duplicateIsCurrentlyServing) {
-                    oldCurrent = '--';
-                } else if (duplicateIndexInQueue !== -1) {
-                    oldQueue.splice(duplicateIndexInQueue, 1);
-                }
-                oldAllEnlisted = removeFromAllEnlisted(oldAllEnlisted, serial);
-
-                updates[duplicateRoomId] = {
-                    current: oldCurrent,
-                    queue: oldQueue.length > 0 ? oldQueue : null,
-                    allEnlisted: oldAllEnlisted.length > 0 ? oldAllEnlisted : null,
-                    lastResetDate: oldRoomData.lastResetDate || ""
-                };
-
-                let currentRoomData = (duplicateRoomId === roomId) ? updates[roomId] : (globalDataState[roomId] || {});
-                let currentQueue = getCleanQueueArray(currentRoomData);
-                let currentAllEnlisted = getCleanAllEnlistedArray(currentRoomData);
-
-                currentQueue = currentQueue.filter(item => parseInt(item, 10) !== normalizedInputInt);
-                currentQueue.push(serial);
-                currentQueue.sort((a, b) => parseInt(a) - parseInt(b));
-
-                currentAllEnlisted = removeFromAllEnlisted(currentAllEnlisted, serial);
-                currentAllEnlisted = addToAllEnlistedUnique(currentAllEnlisted, serial);
-
-                updates[roomId] = {
-                    current: currentRoomData.current || '--',
-                    queue: currentQueue,
-                    allEnlisted: currentAllEnlisted,
-                    lastResetDate: currentRoomData.lastResetDate || new Date().toLocaleDateString('en-CA')
-                };
-                updates['authSecret'] = "INMAS-Mitford2026!";
-
-                pushUndoSnapshot(`ডুপ্লিকেট সিরিয়াল ${serial} স্থানান্তর`, updates); 
-
-                database.ref().update(updates).then(() => {
-                    inputField.value = '';
-                    inputField.focus();
-                });
-                return;
-            }
-
+            let updates = {};
             let roomData = globalDataState[roomId] || {};
             const todayStr = new Date().toLocaleDateString('en-CA');
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
-            
-            queueArray.push(serial);
-            queueArray.sort((a, b) => parseInt(a) - parseInt(b));
-            
-            allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
 
-            let updates = {};
+            let addedCount = 0;
+            serialsToAdd.forEach(serial => {
+                const sInt = parseInt(serial, 10);
+                if (!queueArray.some(s => parseInt(s, 10) === sInt) && 
+                    !holdArray.some(s => parseInt(s, 10) === sInt) &&
+                    (roomData.current === '--' || parseInt(roomData.current, 10) !== sInt)) {
+                    queueArray.push(serial);
+                    allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount === 0) {
+                alert("উক্ত সিরিয়াল নম্বর(গুলো) ইতিমধ্যেই তালিকায় যুক্ত আছে!");
+                return;
+            }
+
+            queueArray.sort((a, b) => parseInt(a) - parseInt(b));
+
             updates[roomId] = {
                 current: roomData.current || '--',
                 queue: queueArray,
+                hold: holdArray.length > 0 ? holdArray : null,
                 allEnlisted: allEnlistedArray,
                 lastResetDate: roomData.lastResetDate || todayStr
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
             
-            pushUndoSnapshot(`নতুন সিরিয়াল ${serial} যুক্ত করা`, updates); 
+            const label = serialsToAdd.length > 1 ? `${addedCount}টি সিরিয়াল যুক্তকরণ` : `সিরিয়াল ${serialsToAdd[0]} যুক্তকরণ`;
+            pushUndoSnapshot(label, updates); 
 
             database.ref().update(updates).then(() => {
                 inputField.value = '';
@@ -838,7 +1011,92 @@
         });
     }
 
+    /* ফিচার ১: অন-হোল্ড মেকানিজম ফাংশনসমূহ */
+    function putOnHold(roomId, index, serial) {
+        triggerHaptic(30);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+
+            queueArray.splice(index, 1);
+            holdArray.push(serial);
+            holdArray.sort((a, b) => parseInt(a) - parseInt(b));
+
+            let updates = {};
+            updates[roomId] = {
+                current: roomData.current || '--',
+                queue: queueArray.length > 0 ? queueArray : null,
+                hold: holdArray,
+                allEnlisted: allEnlistedArray,
+                lastResetDate: roomData.lastResetDate || ""
+            };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+
+            pushUndoSnapshot(`সিরিয়াল ${serial} হোল্ডে নেওয়া`, updates);
+            database.ref().update(updates);
+        });
+    }
+
+    function restoreFromHold(roomId, hIndex, serial) {
+        triggerHaptic(30);
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+
+            holdArray.splice(hIndex, 1);
+            queueArray.unshift(serial); // লাইনের একদম শুরুতে বা পরবর্তী হিসেবে পাঠিয়ে দেওয়া
+
+            let updates = {};
+            updates[roomId] = {
+                current: roomData.current || '--',
+                queue: queueArray,
+                hold: holdArray.length > 0 ? holdArray : null,
+                allEnlisted: allEnlistedArray,
+                lastResetDate: roomData.lastResetDate || ""
+            };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+
+            recentlyMovedSerial = serial;
+            pushUndoSnapshot(`হোল্ড থেকে সিরিয়াল ${serial} লাইনে ফেরত`, updates);
+            database.ref().update(updates);
+        });
+    }
+
+    function deleteHoldItem(roomId, hIndex, serial) {
+        if (!confirm(`আপনি কি নিশ্চিতভাবে হোল্ডে থাকা সিরিয়াল ${serial}-কে বাদ দিতে চান?`)) return;
+        database.ref().once('value').then((snapshot) => {
+            globalDataState = snapshot.val() || {};
+            const roomData = globalDataState[roomId] || {};
+            let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
+            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
+
+            holdArray.splice(hIndex, 1);
+            allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, serial);
+
+            let updates = {};
+            updates[roomId] = {
+                current: roomData.current || '--',
+                queue: queueArray.length > 0 ? queueArray : null,
+                hold: holdArray.length > 0 ? holdArray : null,
+                allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null,
+                lastResetDate: roomData.lastResetDate || ""
+            };
+            updates['authSecret'] = "INMAS-Mitford2026!";
+
+            pushUndoSnapshot(`হোল্ড থেকে সিরিয়াল ${serial} মোছা`, updates);
+            database.ref().update(updates);
+        });
+    }
+
     function transferPatient(fromRoom, index, serial) {
+        triggerHaptic(30);
         let optionsPrompt = "সিরিয়াল নম্বর " + serial + "-কে অন্য রুমে স্থানান্তর করুন:\n";
         globalRoomsConfig.forEach((r, idx) => {
             if (r.id !== fromRoom) optionsPrompt += `\n[ ${idx + 1} ] চাপুন - ${r.name}-এ পাঠানোর জন্য`;
@@ -859,35 +1117,38 @@
 
             const fromRoomData = globalDataState[fromRoom] || {};
             let fromQueue = getCleanQueueArray(fromRoomData);
+            let fromHold = getCleanHoldArray(fromRoomData);
             let fromAllEnlisted = getCleanAllEnlistedArray(fromRoomData);
             fromQueue.splice(index, 1);
             fromAllEnlisted = removeFromAllEnlisted(fromAllEnlisted, serial);
 
             const targetRoomData = globalDataState[targetRoomId] || {};
             let targetQueue = getCleanQueueArray(targetRoomData);
+            let targetHold = getCleanHoldArray(targetRoomData);
             let targetAllEnlisted = getCleanAllEnlistedArray(targetRoomData);
             targetQueue.push(serial);
             targetQueue.sort((a, b) => parseInt(a) - parseInt(b));
             targetAllEnlisted = addToAllEnlistedUnique(targetAllEnlisted, serial);
 
             let updates = {};
-            updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, allEnlisted: fromAllEnlisted.length > 0 ? fromAllEnlisted : null, lastResetDate: fromRoomData.lastResetDate || "" };
-            updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, allEnlisted: targetAllEnlisted, lastResetDate: targetRoomData.lastResetDate || "" };
+            updates[fromRoom] = { current: fromRoomData.current || '--', queue: fromQueue.length > 0 ? fromQueue : null, hold: fromHold.length > 0 ? fromHold : null, allEnlisted: fromAllEnlisted.length > 0 ? fromAllEnlisted : null, lastResetDate: fromRoomData.lastResetDate || "" };
+            updates[targetRoomId] = { current: targetRoomData.current || '--', queue: targetQueue, hold: targetHold.length > 0 ? targetHold : null, allEnlisted: targetAllEnlisted, lastResetDate: targetRoomData.lastResetDate || "" };
             updates['authSecret'] = "INMAS-Mitford2026!";
 
             pushUndoSnapshot(`সিরিয়াল ${serial} ➔ ${targetRoomName}-এ স্থানান্তর`, updates); 
-
             database.ref().update(updates);
         });
     }
 
     function callNextPatient() {
+        triggerHaptic(50);
         const roomId = getSelectedRoom();
         
         database.ref().once('value').then((snapshot) => {
             globalDataState = snapshot.val() || {};
             const roomData = globalDataState[roomId] || {};
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
             
             if (queueArray.length === 0) { alert("এই রুমের ওয়েটিং লিস্ট বর্তমানে খালি!"); return; }
@@ -899,22 +1160,24 @@
             updates[roomId] = {
                 current: nextSerial,
                 queue: queueArray.length > 0 ? queueArray : null,
+                hold: holdArray.length > 0 ? holdArray : null,
                 allEnlisted: allEnlistedArray,
                 lastResetDate: roomData.lastResetDate || new Date().toLocaleDateString('en-CA')
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
             
             pushUndoSnapshot(`পরবর্তী সিরিয়াল ${nextSerial} কল`, updates); 
-
             database.ref().update(updates);
         });
     }
 
     function moveOrder(roomId, index, direction) {
+        triggerHaptic(20);
         database.ref().once('value').then((snapshot) => {
             globalDataState = snapshot.val() || {};
             const roomData = globalDataState[roomId] || {};
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -926,34 +1189,34 @@
             queueArray[targetIndex] = temp;
 
             let updates = {};
-            updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray, hold: holdArray.length > 0 ? holdArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
             updates['authSecret'] = "INMAS-Mitford2026!";
 
             recentlyMovedSerial = serial;
             const dirText = direction === 'up' ? '১ ধাপ উপরে' : '১ ধাপ নিচে';
-            pushUndoSnapshot(`সিরিয়াল ${serial}-কে ${dirText} নেওয়া`, updates); 
-
+            pushUndoSnapshot(`সিরিয়াল ${serial}-কে ${dirText}`, updates); 
             database.ref().update(updates);
         });
     }
 
     function callSpecificPatient(roomId, index, serial) {
+        triggerHaptic(40);
         if (!confirm(`জরুরী ডাক (Emergency Override):\nআপনি কি নিশ্চিতভাবে সিরিয়াল নম্বর ${serial}-কে এখনই ভেতরে ডাকতে চান?`)) return;
         
         database.ref().once('value').then((snapshot) => {
             globalDataState = snapshot.val() || {};
             const roomData = globalDataState[roomId] || {};
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
             queueArray.splice(index, 1);
             allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, serial);
 
             let updates = {};
-            updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates[roomId] = { current: serial, queue: queueArray.length > 0 ? queueArray : null, hold: holdArray.length > 0 ? holdArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
             updates['authSecret'] = "INMAS-Mitford2026!";
             
             pushUndoSnapshot(`জরুরী কল: সিরিয়াল ${serial}`, updates); 
-
             database.ref().update(updates);
         });
     }
@@ -966,6 +1229,7 @@
             globalDataState = snapshot.val() || {};
             const roomData = globalDataState[roomId] || {};
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
             const oldSerial = queueArray[index];
@@ -978,22 +1242,23 @@
             allEnlistedArray = addToAllEnlistedUnique(allEnlistedArray, newSerialClean);
 
             let updates = {};
-            updates[roomId] = { current: roomData.current || '--', queue: queueArray, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray, hold: holdArray.length > 0 ? holdArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
             updates['authSecret'] = "INMAS-Mitford2026!";
             
             pushUndoSnapshot(`সিরিয়াল ${oldSerial} ➔ ${newSerialClean} সম্পাদনা`, updates); 
-
             database.ref().update(updates);
         });
     }
 
     function deleteQueueItem(roomId, index) {
+        triggerHaptic(30);
         if (!confirm("আপনি কি নিশ্চিতভাবে এই রোগীকে ওয়েটিং লিস্ট থেকে বাদ দিতে চান?")) return;
         
         database.ref().once('value').then((snapshot) => {
             globalDataState = snapshot.val() || {};
             const roomData = globalDataState[roomId] || {};
             let queueArray = getCleanQueueArray(roomData);
+            let holdArray = getCleanHoldArray(roomData);
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
             const deletedSerial = queueArray[index];
             
@@ -1001,16 +1266,72 @@
             allEnlistedArray = removeFromAllEnlisted(allEnlistedArray, deletedSerial);
 
             let updates = {};
-            updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null, lastResetDate: roomData.lastResetDate || "" };
+            updates[roomId] = { current: roomData.current || '--', queue: queueArray.length > 0 ? queueArray : null, hold: holdArray.length > 0 ? holdArray : null, allEnlisted: allEnlistedArray, lastResetDate: roomData.lastResetDate || "" };
             updates['authSecret'] = "INMAS-Mitford2026!";
             
             pushUndoSnapshot(`সিরিয়াল ${deletedSerial} মুছে ফেলা`, updates); 
-
             database.ref().update(updates);
         });
     }
 
+    /* ফিচার ৭: শিফট সারাংশ রিপোর্ট তৈরি ও এক ক্লিকে কপি */
+    function exportDailyShiftReport() {
+        triggerHaptic(40);
+        const todayBangla = new Date().toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        let grandTotal = 0;
+        let grandExamined = 0;
+        let grandWaiting = 0;
+        let grandHold = 0;
+        let roomDetails = [];
+
+        globalRoomsConfig.forEach(room => {
+            const rData = globalDataState[room.id] || {};
+            const qArr = getCleanQueueArray(rData);
+            const hArr = getCleanHoldArray(rData);
+            const allArr = getCleanAllEnlistedArray(rData);
+            const cur = rData.current || '--';
+
+            let examined = 0;
+            allArr.forEach(serial => {
+                const sInt = parseInt(serial, 10);
+                const isCur = (cur !== '--' && parseInt(cur, 10) === sInt);
+                const isQ = qArr.some(q => parseInt(q, 10) === sInt);
+                const isH = hArr.some(h => parseInt(h, 10) === sInt);
+                if (!isCur && !isQ && !isH) examined++;
+            });
+
+            grandTotal += allArr.length;
+            grandExamined += examined;
+            grandWaiting += qArr.length;
+            grandHold += hArr.length;
+
+            roomDetails.push(`• ${room.name}: সম্পন্ন ${examined} জন | অপেক্ষমাণ ${qArr.length} জন | হোল্ড ${hArr.length} জন`);
+        });
+
+        const reportText = `📋 আল্ট্রাসনোগ্রাফি শিফট সারাংশ রিপোর্ট\n📅 ${todayBangla}\n` +
+            `------------------------------------\n` +
+            `🔹 মোট তালিকাভুক্ত: ${grandTotal} জন\n` +
+            `✅ মোট সম্পন্ন: ${grandExamined} জন\n` +
+            `⏳ বর্তমানে অপেক্ষমাণ: ${grandWaiting} জন\n` +
+            `⏸️ বর্তমানে হোল্ডে: ${grandHold} জন\n` +
+            `------------------------------------\n` +
+            `রুমভিত্তিক অগ্রগতি:\n` + roomDetails.join('\n') +
+            `\n------------------------------------\n` +
+            `MediQueue Terminal Suite`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(reportText).then(() => {
+                alert(`✅ আজকের শিফট রিপোর্ট ক্লিপবোর্ডে কপি হয়েছে!\n\n${reportText}`);
+            }).catch(() => {
+                alert(reportText);
+            });
+        } else {
+            alert(reportText);
+        }
+    }
+
     function resetActiveRoomOnly() {
+        triggerHaptic(50);
         const roomId = getSelectedRoom();
         const select = document.getElementById('roomSelect');
         const activeRoomName = select.options[select.selectedIndex] ? select.options[select.selectedIndex].text : "এই রুম";
@@ -1028,6 +1349,7 @@
         updates[roomId] = {
             current: '--',
             queue: null,
+            hold: null,
             allEnlisted: null, 
             lastResetDate: todayStr 
         };
