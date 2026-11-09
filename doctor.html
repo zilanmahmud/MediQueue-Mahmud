@@ -55,15 +55,35 @@
             box-sizing: border-box;
         }
 
-        /* ফিচার ৫: সব রুমের লাইভ কুইক স্ট্রিপ */
+        /* ফিচার ৫: আল্ট্রা-স্মুথ স্ক্রলেবল ক্রস-রুম স্ট্রিপ */
         .cross-room-strip {
             display: flex;
             gap: 8px;
             overflow-x: auto;
+            overflow-y: hidden;
             padding-bottom: 8px;
             margin-bottom: 2vmin;
             scrollbar-width: thin;
+            scrollbar-color: #94a3b8 #f1f5f9;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
+        
+        .cross-room-strip::-webkit-scrollbar {
+            height: 6px;
+        }
+        .cross-room-strip::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+        .cross-room-strip::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .cross-room-strip::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
         .cross-room-pill {
             background: #ffffff;
             border: 2px solid #cbd5e1;
@@ -79,6 +99,8 @@
             align-items: center;
             gap: 5px;
             transition: all 0.2s ease;
+            flex-shrink: 0;
+            user-select: none;
         }
         .cross-room-pill.active {
             border-color: #1a73e8;
@@ -242,7 +264,7 @@
             padding-top: 2vmin; 
         }
 
-        /* ফিচার ১: অন-হোল্ড (প্রস্তুতি) শেলফ স্টাইলিং */
+        /* ফিচার ১: অন-হোল্ড শেলফ স্টাইলিং */
         .hold-shelf-section {
             background: #fffbeb;
             border: 2px dashed #f59e0b;
@@ -415,7 +437,7 @@
     
     <div class="date-display" id="liveDateDisplay">আজকের তারিখ লোড হচ্ছে...</div>
 
-    <!-- ফিচার ৫: ক্রস-রুম কুইক স্ট্রিপ -->
+    <!-- ফিচার ৫: স্ক্রলেবল ক্রস-রুম কুইক স্ট্রিপ -->
     <div class="cross-room-strip" id="crossRoomQuickBar"></div>
 
     <!-- ফিচার ৩: কুইক সিরিয়াল সার্চ বার -->
@@ -458,7 +480,7 @@
     
     <button class="undo-btn" id="undoActionButton" onclick="triggerUndoLastAction()"></button>
 
-    <!-- ফিচার ১: পানি খাওয়ার জন্য হোল্ড শেলফ -->
+    <!-- ফিচার ১: অন-হোল্ড শেলফ -->
     <div class="hold-shelf-section" id="holdShelfContainer">
         <div class="hold-header">
             <span>⏸️ হোল্ড করা রোগী</span>
@@ -469,7 +491,6 @@
 
     <div class="queue-section">
         <label for="newPatientSerial">নতুন রোগী যুক্ত করুন (একক বা একগুচ্ছ):</label>
-        <!-- ফিচার ২: ব্যাচ এন্ট্রি ইনপুট -->
         <input type="text" id="newPatientSerial" placeholder="যেমন: 25 অথবা 26, 27, 28 অথবা 30-35" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
         <span class="helper-text">💡 টিপ: একাধিক সিরিয়াল কমা (,) দিয়ে অথবা রেঞ্জ হিসেবে (যেমন: 15-20) একসাথে লিখতে পারেন।</span>
         <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">➕ ওয়েটিং লিস্টে যুক্ত করুন</button>
@@ -479,7 +500,6 @@
     <ul class="queue-list" id="queueListDisplay">
     </ul>
 
-    <!-- ফিচার ৭: শিফট রিপোর্ট এবং রুম রিসেট গ্রিড -->
     <div class="bottom-action-grid">
         <button class="report-btn" onclick="exportDailyShiftReport()">📋 শিফট রিপোর্ট কপি</button>
         <button class="reset-btn" id="resetRoomBtn" onclick="resetActiveRoomOnly()">🧹 রুমের ডেটা রিসেট</button>
@@ -518,14 +538,12 @@
         { primary: '#6d28d9', cardBg: '#f3e8ff', bodyBg: '#ddd6fe' }  
     ];
 
-    /* ফিচার ৬: মোবাইল হ্যাপটিক ফিডব্যাক */
     function triggerHaptic(duration = 40) {
         if (navigator && navigator.vibrate) {
             try { navigator.vibrate(duration); } catch(e) {}
         }
     }
 
-    /* ফিচার ৪: কিবোর্ড শর্টকাট লিসেনার */
     window.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
             e.preventDefault();
@@ -642,7 +660,6 @@
         document.getElementById('resetRoomBtn').innerText = `🧹 ${activeRoomName} রিসেট`;
     }
 
-    /* ফিচার ৫: লাইভ ক্রস-রুম স্ট্রিপ রেন্ডারার */
     function renderCrossRoomStrip() {
         const stripContainer = document.getElementById('crossRoomQuickBar');
         if (!stripContainer) return;
@@ -669,7 +686,17 @@
         });
     }
 
-    /* ফিচার ৩: রিয়েল-টাইম সিরিয়াল ট্র্যাকিং ও সন্ধান */
+    // মাউস হুইল দিয়ে ডানে-বামে মসৃণ স্ক্রল লিসেনার
+    const crossStripEl = document.getElementById('crossRoomQuickBar');
+    if (crossStripEl) {
+        crossStripEl.addEventListener('wheel', function(e) {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                crossStripEl.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+
     function executeInstantPatientSearch() {
         const query = document.getElementById('quickSearchInput').value.trim();
         const resultBox = document.getElementById('quickSearchResult');
@@ -864,7 +891,6 @@
         document.getElementById('statsExaminedVal').innerText = examined;
         document.getElementById('statsTotalVal').innerText = totalEnlisted;
 
-        /* অন-হোল্ড শেলফ রেন্ডারিং */
         const holdContainer = document.getElementById('holdShelfContainer');
         const holdList = document.getElementById('holdListDisplay');
         if (holdArray.length > 0) {
@@ -929,7 +955,6 @@
         }
     }
 
-    /* ফিচার ২: ব্যাচ সিরিয়াল পার্সিং মেকানিজম */
     function parseSerialInput(inputStr) {
         const tokens = inputStr.split(/[\s,]+/);
         let extracted = [];
@@ -1011,7 +1036,6 @@
         });
     }
 
-    /* ফিচার ১: অন-হোল্ড মেকানিজম ফাংশনসমূহ */
     function putOnHold(roomId, index, serial) {
         triggerHaptic(30);
         database.ref().once('value').then((snapshot) => {
@@ -1050,7 +1074,7 @@
             let allEnlistedArray = getCleanAllEnlistedArray(roomData);
 
             holdArray.splice(hIndex, 1);
-            queueArray.unshift(serial); // লাইনের একদম শুরুতে বা পরবর্তী হিসেবে পাঠিয়ে দেওয়া
+            queueArray.unshift(serial);
 
             let updates = {};
             updates[roomId] = {
@@ -1085,7 +1109,7 @@
                 current: roomData.current || '--',
                 queue: queueArray.length > 0 ? queueArray : null,
                 hold: holdArray.length > 0 ? holdArray : null,
-                allEnlisted: allEnlistedArray.length > 0 ? allEnlistedArray : null,
+                allEnlisted: allEnlistedArray,
                 lastResetDate: roomData.lastResetDate || ""
             };
             updates['authSecret'] = "INMAS-Mitford2026!";
@@ -1274,7 +1298,6 @@
         });
     }
 
-    /* ফিচার ৭: শিফট সারাংশ রিপোর্ট তৈরি ও এক ক্লিকে কপি */
     function exportDailyShiftReport() {
         triggerHaptic(40);
         const todayBangla = new Date().toLocaleDateString('bn-BD', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
