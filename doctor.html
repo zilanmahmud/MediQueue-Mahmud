@@ -97,7 +97,6 @@
         }
         .main-call-btn:hover { background: #15803d; }
 
-        /* মাল্টি-লেভেল আনডু বাটন স্টাইলিং */
         .undo-btn {
             width: 100%;
             padding: clamp(12px, 2.5vmin, 16px);
@@ -147,7 +146,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* বড় ও সুস্পষ্ট পরিসংখ্যান ব্যাজ কনটেইনার */
         .stats-grid-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -224,7 +222,6 @@
             transition: all 0.3s ease;
         }
         
-        /* সম্প্রতি মুভ হওয়া আইটেমের হাইলাইট */
         .item-just-moved {
             border-color: #f59e0b !important;
             background-color: #fef3c7 !important;
@@ -257,8 +254,6 @@
         .edit-btn { background: #d97706; }
         .del-btn { background: #4b5563; }
         .order-btn { background: #0284c7; font-size: clamp(12px, 2.8vmin, 15px) !important; } 
-        .pos-btn { background: #0d9488; } /* Teal রঙের পজিশন বাটন */
-        .pos-btn:hover { background: #0f766e; }
         .move-btn { background: #7c3aed; }
 
         .config-toggle-btn {
@@ -327,7 +322,7 @@
         <button class="config-save-btn" onclick="saveRoomConfig()">💾 কনফিগারেশন সেভ ও সিঙ্ক করুন</button>
     </div>
     
-    <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
+    <label for="roomSelect">সক্রিয় রুম নির্বাচন করুন:</label>
     <select id="roomSelect" onchange="applyDynamicRoomTheme(); updateResetButtonLabel(); renderActiveRoom();">
     </select>
 
@@ -335,7 +330,6 @@
         <label>বর্তমানে ভেতরে আছেন:</label>
         <div class="current-number" id="currentPatientDisplay">--</div>
         
-        <!-- স্পষ্ট ও বড় পরিসংখ্যানে রূপান্তর -->
         <div class="stats-grid-container">
             <div class="stat-badge completed-badge">
                 <span class="stat-badge-title">ইতিমধ্যে সম্পন্ন</span>
@@ -352,13 +346,12 @@
 
     <button class="main-call-btn" id="mainCallButton" onclick="callNextPatient()">🔔 পরবর্তী সিরিয়াল কল করুন</button>
     
-    <!-- ডাইনামিক মাল্টি-লেভেল আনডু বাটন -->
     <button class="undo-btn" id="undoActionButton" onclick="triggerUndoLastAction()"></button>
 
     <div class="queue-section">
         <label for="newPatientSerial">এই রুমে নতুন রোগী যুক্ত করুন:</label>
-        <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
-        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
+        <input type="number" id="newPatientSerial" placeholder="সিরিয়াল নম্বর লিখুন" pattern="\d*" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
+        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
@@ -390,7 +383,6 @@
     let localConfigState = [];
     let localWarnedState = {}; 
     
-    /* মাল্টি-লেভেল আনডু স্ট্যাক ও ট্র্যাকিং ভেরিয়েবল */
     let undoHistoryStack = [];
     const MAX_UNDO_DEPTH = 20;
     let recentlyMovedSerial = null;
@@ -595,7 +587,6 @@
         });
     }
 
-    /* মাল্টি-লেভেল আনডু হিস্টোরি স্ট্যাক অপারেশন */
     function pushUndoSnapshot(actionLabel, updates) {
         let backup = {};
         for (let key in updates) {
@@ -610,7 +601,7 @@
         });
 
         if (undoHistoryStack.length > MAX_UNDO_DEPTH) {
-            undoHistoryStack.shift(); // ২০টির বেশি হলে সবচেয়ে পুরনোটি ডিলিট হবে
+            undoHistoryStack.shift();
         }
 
         updateUndoButtonUI();
@@ -623,7 +614,7 @@
         } else {
             const nextUndo = undoHistoryStack[undoHistoryStack.length - 1];
             undoBtn.style.display = 'block';
-            undoBtn.innerHTML = `↩️ পূর্বাবস্থায় ফিরুন: <strong>${nextUndo.label}</strong> <span style="font-size:0.85em; opacity:0.85;">(${undoHistoryStack.length}টি মেমরিতে আছে)</span>`;
+            undoBtn.innerHTML = `↩️ পূর্বাবস্থায় যান: <strong>${nextUndo.label}</strong> <span style="font-size:0.65em; opacity:0.55;">(${undoHistoryStack.length}টি সর্বশেষ কাজ বাতিলযোগ্য)</span>`;
         }
     }
 
@@ -665,7 +656,6 @@
             }
         });
         
-        // বড় পরিসংখ্যান ডিসপ্লে আপডেট
         document.getElementById('statsExaminedVal').innerText = examined;
         document.getElementById('statsTotalVal').innerText = totalEnlisted;
 
@@ -692,7 +682,6 @@
                 const li = document.createElement('li');
                 li.className = 'queue-item';
 
-                // সম্প্রতি মুভ হওয়া আইটেমে হাইলাইট ক্লাস দেওয়া
                 if (recentlyMovedSerial && String(recentlyMovedSerial) === String(serial)) {
                     li.classList.add('item-just-moved');
                 }
@@ -705,7 +694,6 @@
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
-                        <button class="pos-btn" onclick="setSpecificPosition('${roomId}', ${index}, '${serial}')" title="নির্দিষ্ট অবস্থানে পাঠান">⇅ ক্রম</button>
                         <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ স্থানান্তর</button>
                         <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ এখনই ডাকুন</button>
                         <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">সম্পাদনা</button>
@@ -847,55 +835,6 @@
                 inputField.value = '';
                 inputField.focus(); 
             });
-        });
-    }
-
-    /* সরাসরি নির্দিষ্ট অবস্থানে (Position Jump) পাঠানোর ফাংশন */
-    function setSpecificPosition(roomId, currentIndex, serial) {
-        database.ref().once('value').then((snapshot) => {
-            globalDataState = snapshot.val() || {};
-            const roomData = globalDataState[roomId] || {};
-            let queueArray = getCleanQueueArray(roomData);
-            let allEnlistedArray = getCleanAllEnlistedArray(roomData);
-            const total = queueArray.length;
-
-            if (total <= 1) {
-                alert("তালিকায় মাত্র ১ জন অপেক্ষমাণ, স্থান পরিবর্তনের প্রয়োজন নেই।");
-                return;
-            }
-
-            const promptMsg = `🔄 সিরিয়াল নম্বর ${serial}-এর অবস্থান পরিবর্তন:\n` +
-                `বর্তমান অবস্থান: ${currentIndex + 1} নম্বর (মোট অপেক্ষমাণ: ${total} জন)\n\n` +
-                `নতুন অবস্থান নম্বর লিখুন (১ থেকে ${total}):`;
-
-            const input = prompt(promptMsg, currentIndex + 1);
-            if (input === null) return;
-
-            const targetPos = parseInt(input.trim(), 10);
-            if (isNaN(targetPos) || targetPos < 1 || targetPos > total) {
-                alert(`দয়া করে ১ থেকে ${total}-এর মধ্যে একটি সঠিক ক্রম নম্বর লিখুন!`);
-                return;
-            }
-
-            const targetIndex = targetPos - 1;
-            if (targetIndex === currentIndex) return;
-
-            const [movedItem] = queueArray.splice(currentIndex, 1);
-            queueArray.splice(targetIndex, 0, movedItem);
-
-            let updates = {};
-            updates[roomId] = {
-                current: roomData.current || '--',
-                queue: queueArray,
-                allEnlisted: allEnlistedArray,
-                lastResetDate: roomData.lastResetDate || ""
-            };
-            updates['authSecret'] = "INMAS-Mitford2026!";
-
-            recentlyMovedSerial = serial;
-            pushUndoSnapshot(`সিরিয়াল ${serial}-কে ${targetPos} নম্বরে নেওয়া`, updates);
-
-            database.ref().update(updates);
         });
     }
 
