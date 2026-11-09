@@ -472,7 +472,7 @@
         <!-- ফিচার ২: ব্যাচ এন্ট্রি ইনপুট -->
         <input type="text" id="newPatientSerial" placeholder="যেমন: 25 অথবা 26, 27, 28 অথবা 30-35" onkeydown="if(event.key === 'Enter') { event.preventDefault(); addPatientToQueue(); }">
         <span class="helper-text">💡 টিপ: একাধিক সিরিয়াল কমা (,) দিয়ে অথবা রেঞ্জ হিসেবে (যেমন: 15-20) একসাথে লিখতে পারেন।</span>
-        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">+ ওয়েটিং লিস্টে যুক্ত করুন</button>
+        <button class="add-btn" id="addPatientButton" onclick="addPatientToQueue()">➕ ওয়েটিং লিস্টে যুক্ত করুন</button>
     </div>
 
     <label>পরবর্তী অপেক্ষমাণ তালিকা:</label>
@@ -704,7 +704,7 @@
 
             const hIndex = holdArr.findIndex(s => parseInt(s, 10) === normalizedQ);
             if (hIndex !== -1) {
-                findings.push(`⏸️ <strong>${room.name}</strong>-এ পানি খেয়ে প্রস্তুতি নিচ্ছেন (On-Hold)।`);
+                findings.push(`⏸️ <strong>${room.name}</strong>-এ প্রস্তুতি নিচ্ছেন (On-Hold)।`);
             }
 
             const inAll = allEnlisted.some(s => parseInt(s, 10) === normalizedQ);
@@ -876,7 +876,7 @@
                 chip.className = 'hold-chip';
                 chip.innerHTML = `
                     <span>#${serial}</span>
-                    <button onclick="restoreFromHold('${roomId}', ${hIdx}, '${serial}')" title="প্রস্তুতি শেষে লাইনে ফেরত পাঠান">▶️ তৈরি</button>
+                    <button onclick="restoreFromHold('${roomId}', ${hIdx}, '${serial}')" title="প্রস্তুতি শেষে সিরিয়াল লাইনে ফেরত পাঠান">▶️ তৈরি</button>
                     <button style="background:#ef4444;" onclick="deleteHoldItem('${roomId}', ${hIdx}, '${serial}')" title="বাতিল করুন">✕</button>
                 `;
                 holdList.appendChild(chip);
@@ -915,7 +915,7 @@
                     <div class="action-btns">
                         ${upArrow}
                         ${downArrow}
-                        <button class="hold-btn" onclick="putOnHold('${roomId}', ${index}, '${serial}')" title="পানি খেয়ে ব্লাডার পূর্ণ করার জন্য হোল্ডে রাখুন">⏸️ হোল্ড</button>
+                        <button class="hold-btn" onclick="putOnHold('${roomId}', ${index}, '${serial}')" title="প্রস্তুতির জন্য হোল্ডে রাখুন">⏸️ হোল্ড</button>
                         <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ স্থানান্তর</button>
                         <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ ডাকুন</button>
                         <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">🔧 এডিট</button>
