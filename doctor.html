@@ -421,7 +421,7 @@
     <!-- ফিচার ৩: কুইক সিরিয়াল সার্চ বার -->
     <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="quickSearchInput" placeholder="রোগীর সিরিয়াল ট্র্যাক বা সন্ধান করুন (যেমন: 25)..." oninput="executeInstantPatientSearch()">
+        <input type="text" class="search-input" id="quickSearchInput" placeholder="রোগীর সিরিয়াল নং খুঁজুন (যেমন: 25)..." oninput="executeInstantPatientSearch()">
         <div class="search-result-box" id="quickSearchResult"></div>
     </div>
 
@@ -461,7 +461,7 @@
     <!-- ফিচার ১: পানি খাওয়ার জন্য হোল্ড শেলফ -->
     <div class="hold-shelf-section" id="holdShelfContainer">
         <div class="hold-header">
-            <span>⏸️ ব্লাডার প্রস্তুত করছেন (On-Hold)</span>
+            <span>⏸️ হোল্ড করা রোগী</span>
             <span id="holdCountBadge" style="font-size:12px; background:#fde68a; padding:2px 8px; border-radius:12px;">০ জন</span>
         </div>
         <div class="hold-list" id="holdListDisplay"></div>
@@ -819,7 +819,7 @@
         } else {
             const nextUndo = undoHistoryStack[undoHistoryStack.length - 1];
             undoBtn.style.display = 'block';
-            undoBtn.innerHTML = `↩️ বাতিল (Undo): <strong>${nextUndo.label}</strong> <span style="font-size:0.75em; opacity:0.75;">(${undoHistoryStack.length}টি সংরক্ষিত)</span>`;
+            undoBtn.innerHTML = `↩️ বাতিল (Undo) [Ctrl+Z]: <strong>${nextUndo.label}</strong> <span style="font-size:0.75em; opacity:0.75;">(${undoHistoryStack.length}টি কাজ বাতিলযোগ্য)</span>`;
         }
     }
 
@@ -916,10 +916,10 @@
                         ${upArrow}
                         ${downArrow}
                         <button class="hold-btn" onclick="putOnHold('${roomId}', ${index}, '${serial}')" title="পানি খেয়ে ব্লাডার পূর্ণ করার জন্য হোল্ডে রাখুন">⏸️ হোল্ড</button>
-                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ বদল</button>
+                        <button class="move-btn" onclick="transferPatient('${roomId}', ${index}, '${serial}')">➡️ স্থানান্তর</button>
                         <button class="now-btn" onclick="callSpecificPatient('${roomId}', ${index}, '${serial}')">⚡ ডাকুন</button>
-                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">এডিট</button>
-                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">মুছুন</button>
+                        <button class="edit-btn" onclick="editQueueItem('${roomId}', ${index}, '${serial}')">🔧 এডিট</button>
+                        <button class="del-btn" onclick="deleteQueueItem('${roomId}', ${index})">🗑️ মুছুন</button>
                     </div>
                 `;
                 queueListDisplay.appendChild(li);
